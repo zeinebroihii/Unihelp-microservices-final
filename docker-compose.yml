@@ -1,6 +1,6 @@
 services:
   discovery:
-    build: ../tabs/micro-services/discovery
+    build: ./discovery
     container_name: discovery-service
     ports:
       - '8761:8761'
