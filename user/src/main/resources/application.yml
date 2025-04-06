@@ -7,6 +7,3 @@ spring:
   config:
     import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:9999}
 
-jwt:
-  secret: ew0KICAic3ViIjogIjEyMzQ1Njc4OTAiLA0KICAibmFtZSI6ICJKb2huIERvZSIsDQogICJhZG1pbiI6IHRydWUsDQogICJpYXQiOiAxNzQxMTczOTM5DQp9
-  expiration: 3600000 # Example: 1 hour in milliseconds

@@ -1,5 +1,6 @@
 package com.unihelp.user.config;
 
+import jakarta.ws.rs.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/admin/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/reset-password").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers( "/actuator/**").permitAll()
+                        .requestMatchers( "/v3/api-docs/**").permitAll()
+                        .requestMatchers( " /swagger-ui/**").permitAll()
+
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
