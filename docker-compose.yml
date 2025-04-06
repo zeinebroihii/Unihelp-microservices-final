@@ -10,8 +10,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
       retries: 4
-      start_period: 100s      # Time to wait before performing the first health check
-      timeout: 60s
+      start_period: 190s      # Time to wait before performing the first health check
+      timeout: 80s
 
   config-server:
     build: ./config-server
@@ -26,8 +26,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9999/actuator/health"]
       interval: 10s
       retries: 4
-      start_period: 160s      # Time to wait before performing the first health check
-      timeout: 120s
+      start_period: 300s      # Time to wait before performing the first health check
+      timeout: 300s
     depends_on:
       discovery:
         condition: service_healthy
@@ -63,8 +63,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8073/actuator/health"]
       interval: 10s
       retries: 4
-      start_period: 160s      # Time to wait before performing the first health check
-      timeout: 120s           # Time to wait for the health check to respond
+      start_period: 600s      # Time to wait before performing the first health check
+      timeout: 300s           # Time to wait for the health check to respond
     depends_on:
       config-server:
         condition: service_healthy
