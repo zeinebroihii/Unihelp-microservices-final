@@ -153,6 +153,13 @@ services:
     expose:
       - '81'
 
+  backend:
+    build: ./BackOffice-UniHelp
+    container_name: backend
+    ports:
+      - '84:80'
+    expose:
+      - '84'
 volumes:
   mysql_data_user:
   mysql_data_cours:
