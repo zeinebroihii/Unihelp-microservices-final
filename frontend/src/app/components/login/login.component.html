@@ -41,6 +41,10 @@
         <a href="#">Forgot password?</a>
       </div>
 
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
       <button type="submit" class="genric-btn primary" [disabled]="loginForm.invalid">
         Log In
       </button>
@@ -60,14 +64,13 @@
       </div>
 
       <p class="signup-link">
-        Don’t have account? <a href="#" (click)="goToSignUp()">Sign up</a>
+        Don’t have account? <a (click)="goToSignUp()">Sign up</a>
       </p>
     </form>
   </div>
 
   <!-- Right Section (Photo) -->
   <div class="photo-section">
-    <!-- Placeholder for the photo -->
-    <img src="assets/img/login-bck.j" alt="Login Photo" class="login-photo" />
+    <img src="assets/ghibli-students.jpg" alt="Students Studying" class="login-photo" />
   </div>
 </div>
