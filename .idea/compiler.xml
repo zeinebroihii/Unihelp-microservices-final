@@ -20,13 +20,14 @@
         </processorPath>
         <module name="user" />
       </profile>
-      <profile name="Annotation profile for cours" enabled="true">
+      <profile name="Annotation profile for event" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
+        <module name="event" />
         <module name="cours" />
       </profile>
     </annotationProcessing>
@@ -39,6 +40,7 @@
       <module name="config-server" options="-parameters" />
       <module name="cours" options="-parameters" />
       <module name="discovery" options="-parameters" />
+      <module name="event" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="unihelp" options="-parameters" />
       <module name="user" options="-parameters" />

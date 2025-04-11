@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/user/pom.xml" />
         <option value="$PROJECT_DIR$/../unihelp/pom.xml" />
         <option value="$PROJECT_DIR$/cours/pom.xml" />
+        <option value="$PROJECT_DIR$/event/pom.xml" />
+        <option value="$PROJECT_DIR$/event/event/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
