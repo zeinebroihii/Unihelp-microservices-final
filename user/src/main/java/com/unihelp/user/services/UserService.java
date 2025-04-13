@@ -6,10 +6,14 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.unihelp.user.dto.RegisterRequest;
 import com.unihelp.user.entities.User;
+import com.unihelp.user.entities.UserRole;
 import com.unihelp.user.repositories.UserRepository;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,24 +32,37 @@ public class UserService {
         this.tokenRepository = tokenRepository;
     }
 
-    public User registerUser(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+    public User registerUser(String firstName, String lastName, String email, String password,
+                             String bio, String skills, UserRole role, MultipartFile profileImage) {
+
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email déjà utilisé !");
         }
 
-        return userRepository.save(User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .bio(request.getBio())
-                .skills(request.getSkills())
-                .profileImage(request.getProfileImage())
-                .role(request.getRole())
+        // Traitement de l'image (optionnel : enregistrer en base de données ou dans un dossier)
+        byte[] imageData = null;
+        try {
+            imageData = profileImage.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors du traitement de l'image : " + e.getMessage());
+        }
+
+        User user = User.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .bio(bio)
+                .skills(skills)
+                .role(role)
+                .profileImage(imageData) // ⚠️ profileImage doit être un tableau de bytes dans ton entité !
                 .isActive(true)
                 .isBanned(false)
-                .build());
+                .build();
+
+        return userRepository.save(user);
     }
+
 
     public void generateAndSendEmailRestToken(String email) throws MessagingException {
         Optional<User> userByEmail = userRepository.findByEmail(email);

@@ -3,7 +3,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
-// Define interfaces for request and response DTOs
 interface RegisterRequest {
   email: string;
   password: string;
@@ -37,15 +36,26 @@ interface ResetPasswordRequest {
   newPassword: string;
 }
 
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  bio?: string;
+  skills?: string[];
+  profileImage?: string;
+  role: string;
+  banned: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth'; // Adjust to your backend URL
+  private apiUrl = 'http://localhost:8080/api/auth';
 
   constructor(private http: HttpClient) {}
 
-  // Register a new user
   register(request: RegisterRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, request, { responseType: 'json' })
       .pipe(
@@ -53,12 +63,10 @@ export class AuthService {
       );
   }
 
-  // Login a user
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request)
       .pipe(
         tap(response => {
-          // Store the JWT token in localStorage
           localStorage.setItem('token', response.token);
           localStorage.setItem('user', JSON.stringify({
             id: response.id,
@@ -70,12 +78,10 @@ export class AuthService {
       );
   }
 
-  // Logout a user
   logout(): Observable<string> {
     return this.http.post<string>(`${this.apiUrl}/logout`, {})
       .pipe(
         tap(() => {
-          // Clear the token and user data from localStorage
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         }),
@@ -83,24 +89,20 @@ export class AuthService {
       );
   }
 
-  // Check if the user is logged in
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
 
-  // Get the current user's role
   getUserRole(): string | null {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user).role : null;
   }
 
-  // Get the current user's email
   getUserEmail(): string | null {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user).email : null;
   }
 
-  // Forgot password
   forgotPassword(email: string): Observable<string> {
     const request: EmailRequest = { email };
     return this.http.post<string>(`${this.apiUrl}/forgot-password`, request)
@@ -109,7 +111,6 @@ export class AuthService {
       );
   }
 
-  // Verify reset password token
   verifyResetToken(token: string): Observable<string> {
     return this.http.get<string>(`${this.apiUrl}/reset-password`, { params: { token } })
       .pipe(
@@ -117,7 +118,6 @@ export class AuthService {
       );
   }
 
-  // Reset password
   resetPassword(request: ResetPasswordRequest): Observable<string> {
     return this.http.post<string>(`${this.apiUrl}/reset-password`, request)
       .pipe(
@@ -125,15 +125,64 @@ export class AuthService {
       );
   }
 
-  // Handle HTTP errors
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/admin/users`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/admin/users/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  banUser(id: number): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/admin/users/${id}/ban`, {})
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  unbanUser(id: number): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/admin/users/${id}/unban`, {})
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  updateUser(id: number, user: User): Observable<string> {
+    return this.http.put<string>(`${this.apiUrl}/admin/users/${id}`, user)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  deleteUser(id: number): Observable<string> {
+    return this.http.delete<string>(`${this.apiUrl}/admin/users/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred!';
     if (error.error instanceof ErrorEvent) {
       // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
+      errorMessage = `Client-side error: ${error.error.message}`;
     } else {
       // Server-side error
-      errorMessage = error.error || `Error Code: ${error.status}\nMessage: ${error.message}`;
+      if (error.status === 0) {
+        errorMessage = 'Network error: Could not connect to the server. Please check if the backend is running.';
+      } else if (error.status === 413) {
+        errorMessage = 'Payload too large: The uploaded image is too big. Please upload a smaller image.';
+      } else if (error.status === 500) {
+        errorMessage = `Server error: ${error.error || 'Internal Server Error. Please check the backend logs.'}`;
+      } else {
+        errorMessage = `Error Code: ${error.status}\nMessage: ${error.error || error.message}`;
+      }
     }
     return throwError(() => new Error(errorMessage));
   }

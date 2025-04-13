@@ -1,0 +1,135 @@
+<div class="signup-container">
+  <!-- Left Section (Form) -->
+  <div class="form-section">
+    <div class="form-header">
+      <span class="dot"></span>
+      <h1>Sign Up</h1>
+    </div>
+    <p class="subheading">Create your account to get started!</p>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input
+          type="text"
+          id="firstName"
+          formControlName="firstName"
+          placeholder="Enter your first name"
+          class="form-control"
+          required
+        />
+        <small
+          *ngIf="
+            signupForm.get('firstName')?.invalid &&
+            signupForm.get('firstName')?.touched
+          "
+        >
+          First name must be at least 2 characters
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          formControlName="lastName"
+          placeholder="Enter your last name"
+          class="form-control"
+          required
+        />
+        <small
+          *ngIf="
+            signupForm.get('lastName')?.invalid &&
+            signupForm.get('lastName')?.touched
+          "
+        >
+          Last name must be at least 2 characters
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          class="form-control"
+          required
+        />
+        <small
+          *ngIf="
+            signupForm.get('email')?.invalid && signupForm.get('email')?.touched
+          "
+        >
+          Invalid email format
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          class="form-control"
+          required
+        />
+        <small
+          *ngIf="
+            signupForm.get('password')?.invalid &&
+            signupForm.get('password')?.touched
+          "
+        >
+          Password must be at least 8 characters
+        </small>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        class="genric-btn primary"
+        [disabled]="signupForm.invalid"
+      >
+        Sign Up
+      </button>
+
+      <div class="social-login">
+        <p>Or Continue With</p>
+        <div class="social-buttons">
+          <button type="button" class="social-btn google">
+            <img
+              src="https://img.icons8.com/color/24/000000/google-logo.png"
+              alt="Google"
+            />
+            Google
+          </button>
+          <button type="button" class="social-btn facebook">
+            <img
+              src="https://img.icons8.com/color/24/000000/facebook-new.png"
+              alt="Facebook"
+            />
+            Facebook
+          </button>
+        </div>
+      </div>
+
+      <p class="signup-link">
+        Already have an account? <a (click)="goToLogin()">Log in</a>
+      </p>
+    </form>
+  </div>
+
+  <!-- Right Section (Photo) -->
+  <div class="photo-section">
+    <img
+      src="assets/ghibli-students.jpg"
+      alt="Students Studying"
+      class="signup-photo"
+    />
+  </div>
+</div>

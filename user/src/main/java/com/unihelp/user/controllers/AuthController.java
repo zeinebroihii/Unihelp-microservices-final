@@ -3,6 +3,7 @@ package com.unihelp.user.controllers;
 import com.unihelp.user.dto.*;
 import com.unihelp.user.entities.Token;
 import com.unihelp.user.entities.User;
+import com.unihelp.user.entities.UserRole;
 import com.unihelp.user.repositories.TokenRepository;
 import com.unihelp.user.repositories.UserRepository;
 import com.unihelp.user.security.JwtUtils;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.time.LocalDateTime;
@@ -43,9 +45,20 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> registerUser(
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("bio") String bio,
+            @RequestParam("skills") String skills,
+            @RequestParam("role") UserRole role,
+            @RequestParam("profileImage") MultipartFile profileImage
+    ) {
         try {
-            User user = userService.registerUser(request);
+            User user = userService.registerUser(
+                    firstName, lastName, email, password, bio, skills, role, profileImage
+            );
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,14 +105,12 @@ public class AuthController {
         return ResponseEntity.ok("User logged out successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -107,7 +118,6 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/{id}/ban")
     public ResponseEntity<String> banUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -120,7 +130,6 @@ public class AuthController {
         return ResponseEntity.ok("User banned successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/{id}/unban")
     public ResponseEntity<String> unbanUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -133,7 +142,6 @@ public class AuthController {
         return ResponseEntity.ok("User unbanned successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/users/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
         User user = userRepository.findById(id)
@@ -149,7 +157,6 @@ public class AuthController {
         return ResponseEntity.ok("User details updated successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         User user = userRepository.findById(id)

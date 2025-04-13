@@ -38,8 +38,9 @@ public class User implements UserDetails {
     @Column(length = 500)
     private String skills;
 
-    @Column(name = "profile_image")
-    private String profileImage;
+    @Lob
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
+    private byte[] profileImage;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
