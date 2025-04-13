@@ -1,0 +1,63 @@
+<h1>IT WORKS!</h1>
+
+<div class="container py-5" *ngIf="course">
+  <!-- Course Header -->
+  <div class="course-header card shadow-sm mb-5 animate__animated animate__fadeIn">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img [ngSrc]="course.thumbnailUrl" [alt]="course.title + ' Thumbnail'" class="img-fluid rounded-start" width="400" height="220">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h1 class="card-title display-5">{{ course.title }}</h1>
+          <p class="card-text lead">{{ course.description }}</p>
+          <div class="course-meta">
+            <p><strong>Category:</strong> {{ course.category }}</p>
+            <p><strong>Level:</strong> {{ course.level }}</p>
+            <p><strong>Price:</strong> ${{ course.price }}</p>
+            <p><strong>Instructor:</strong> {{ course.user.firstName }} {{ course.user.lastName }} ({{ course.user.role }})</p>
+            <p><strong>Email:</strong> {{ course.user.email }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modules Section -->
+  <h2 class="section-title mb-4 animate__animated animate__fadeIn">Course Modules</h2>
+  <div class="modules-list">
+    <div *ngFor="let module of modules; let i = index" class="module-card card shadow-sm mb-3 animate__animated animate__fadeInUp" [style.animation-delay]="i * 0.1 + 's'">
+      <div class="card-header" (click)="toggleModule(module.id)">
+        <h3 class="card-title mb-0">{{ module.title }}</h3>
+        <span class="toggle-icon" [ngClass]="{'expanded': expandedModule === module.id}"></span>
+      </div>
+      <div class="card-body" [@expandCollapse]="expandedModule === module.id ? 'expanded' : 'collapsed'">
+        <p>{{ module.description }}</p>
+        <h4 class="mt-4">Lessons</h4>
+        <ul class="list-group list-group-flush">
+          <li *ngFor="let lesson of module.lessons" class="list-group-item animate__animated animate__fadeIn">
+            {{ lesson.title }}
+          </li>
+          <li class="list-group-item" *ngIf="!module.lessons.length">No lessons yet.</li>
+        </ul>
+        <!-- Add Lesson Form -->
+        <div class="add-lesson mt-4">
+          <h5>Add a Lesson</h5>
+          <div class="input-group">
+            <input [(ngModel)]="newLesson[module.id].title" placeholder="Lesson title" class="form-control">
+            <button class="btn add-lesson-btn" (click)="addLesson(module.id)">Add Lesson</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!modules.length" class="alert alert-info animate__animated animate__fadeIn">
+      No modules available for this course.
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!course" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>

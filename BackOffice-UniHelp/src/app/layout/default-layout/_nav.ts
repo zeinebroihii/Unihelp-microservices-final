@@ -25,10 +25,29 @@ export const navItems: INavData[] = [
     linkProps: { fragment: 'headings' },
     iconComponent: { name: 'cil-pencil' }
   },
+
   {
-    name: 'Components',
-    title: true
+    title: true,
+    name: 'Courses'
   },
+  {
+    name: 'Courses',
+    url: '/courses',
+    iconComponent: { name: 'cilLayers' }
+  },
+  {
+    name: 'Quizzes',
+    url: '/quizzes',
+    iconComponent: { name: 'cilFile' }
+  },
+  {
+    name: 'Marks',
+    url: '/marks',
+    linkProps: { fragment: 'headings' },
+    iconComponent: { name: 'cilPencil' }
+  },
+
+
   {
     name: 'Base',
     url: '/base',

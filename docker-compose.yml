@@ -10,7 +10,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
       retries: 4
-      start_period: 190s      # Time to wait before performing the first health check
+      start_period: 190s    # Time to wait before performing the first health check
       timeout: 80s
 
   config-server:
@@ -109,6 +109,7 @@ services:
       mysql-cours:
         condition: service_healthy
 
+
   gateway:
     build: ./gateway
     container_name: gateway-service
@@ -145,22 +146,30 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-  angular:
+
+  frontend:
     build: ./frontend
+
     container_name: frontend
     ports:
-      - '81:80'
+      - "81:80"
+    volumes:
+      - ./frontend:/usr/src/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     expose:
-      - '81'
+      - "81"
 
-  backend:
-    build: ./BackOffice-UniHelp
-    container_name: backend
-    ports:
-      - '84:80'
-    expose:
-      - '84'
+
+ # backend:
+    #  build: ./BackOffice-UniHelp
+    #  container_name: backend
+      #  ports:
+    #    - '84:80'
+      #  expose:
+    #  - '84'
 volumes:
   mysql_data_user:
   mysql_data_cours:
+  mysql_data_events:
   jenkins_data:

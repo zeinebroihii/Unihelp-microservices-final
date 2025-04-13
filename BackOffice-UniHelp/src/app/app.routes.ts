@@ -23,6 +23,20 @@ export const routes: Routes = [
         loadChildren: () => import('./views/theme/routes').then((m) => m.routes)
       },
       {
+        path: 'courses',
+        loadChildren: () => import('./views/course/routes').then((m) => m.routes)
+      },
+      {
+        path: 'add-course',
+        loadChildren: () => import('./views/add-course/routes').then((m) => m.routes)
+      },
+      {
+        path: 'courses/:id',
+        loadChildren: () => import('./views/course-detail/routes').then((m) => m.routes)
+      },
+
+
+      {
         path: 'base',
         loadChildren: () => import('./views/base/routes').then((m) => m.routes)
       },
