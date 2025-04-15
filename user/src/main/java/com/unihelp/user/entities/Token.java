@@ -22,4 +22,5 @@ public class Token {
 
     @ManyToOne 
     private User user;
+    private boolean revoked;
 }

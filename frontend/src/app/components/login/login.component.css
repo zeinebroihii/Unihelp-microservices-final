@@ -211,6 +211,23 @@
   background: linear-gradient(90deg, rgba(255, 98, 0, 0.5), rgba(255, 165, 0, 0.3)); /* Orange gradient overlay */
   z-index: 1;
 }
+.genric-btn.primary.loading::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {

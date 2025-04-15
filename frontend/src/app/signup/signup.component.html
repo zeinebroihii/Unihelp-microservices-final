@@ -6,7 +6,13 @@
       <h1>Sign Up</h1>
     </div>
     <p class="subheading">Create your account to get started!</p>
-    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+    <form
+      [formGroup]="signupForm"
+      (ngSubmit)="onSubmit()"
+      class="signup-form"
+      enctype="multipart/form-data"
+    >
+      <!-- First Name -->
       <div class="form-group">
         <label for="firstName">First Name</label>
         <input
@@ -16,17 +22,21 @@
           placeholder="Enter your first name"
           class="form-control"
           required
+          aria-describedby="firstNameError"
         />
         <small
+          id="firstNameError"
           *ngIf="
             signupForm.get('firstName')?.invalid &&
             signupForm.get('firstName')?.touched
           "
+          class="error-text"
         >
           First name must be at least 2 characters
         </small>
       </div>
 
+      <!-- Last Name -->
       <div class="form-group">
         <label for="lastName">Last Name</label>
         <input
@@ -36,17 +46,21 @@
           placeholder="Enter your last name"
           class="form-control"
           required
+          aria-describedby="lastNameError"
         />
         <small
+          id="lastNameError"
           *ngIf="
             signupForm.get('lastName')?.invalid &&
             signupForm.get('lastName')?.touched
           "
+          class="error-text"
         >
           Last name must be at least 2 characters
         </small>
       </div>
 
+      <!-- Email -->
       <div class="form-group">
         <label for="email">Email</label>
         <input
@@ -56,16 +70,20 @@
           placeholder="Enter your email"
           class="form-control"
           required
+          aria-describedby="emailError"
         />
         <small
+          id="emailError"
           *ngIf="
             signupForm.get('email')?.invalid && signupForm.get('email')?.touched
           "
+          class="error-text"
         >
           Invalid email format
         </small>
       </div>
 
+      <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
         <input
@@ -75,21 +93,128 @@
           placeholder="Enter your password"
           class="form-control"
           required
+          aria-describedby="passwordError"
         />
         <small
+          id="passwordError"
           *ngIf="
             signupForm.get('password')?.invalid &&
             signupForm.get('password')?.touched
           "
+          class="error-text"
         >
           Password must be at least 8 characters
         </small>
       </div>
 
+      <!-- Bio -->
+      <div class="form-group">
+        <label for="bio">Bio</label>
+        <textarea
+          id="bio"
+          formControlName="bio"
+          placeholder="Tell us about yourself"
+          class="form-control"
+          rows="4"
+          aria-describedby="bioError"
+        ></textarea>
+        <small
+          id="bioError"
+          *ngIf="
+            signupForm.get('bio')?.invalid && signupForm.get('bio')?.touched
+          "
+          class="error-text"
+        >
+          Bio must be at least 10 characters
+        </small>
+      </div>
+
+      <!-- Skills -->
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Skills</mat-label>
+          <mat-chip-grid #chipGrid aria-label="Skills selection">
+            <mat-chip-row
+              *ngFor="let skill of signupForm.get('skillsList')?.value"
+              [removable]="true"
+              (removed)="removeSkill(skill)"
+            >
+              {{ skill }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip-row>
+            <input
+              placeholder="Add a skill..."
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="addSkill($event)"
+              aria-describedby="skillsError"
+            />
+          </mat-chip-grid>
+          <mat-error
+            id="skillsError"
+            *ngIf="
+              signupForm.get('skillsList')?.invalid &&
+              signupForm.get('skillsList')?.touched
+            "
+          >
+            Please add at least one skill
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Role -->
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select
+          id="role"
+          formControlName="role"
+          class="form-control"
+          aria-describedby="roleError"
+        >
+          <option value="" disabled selected>Select your role</option>
+          <option value="STUDENT">Student</option>
+          <option value="TEACHER">Teacher</option>
+        </select>
+        <small
+          id="roleError"
+          *ngIf="
+            signupForm.get('role')?.invalid && signupForm.get('role')?.touched
+          "
+          class="error-text"
+        >
+          Please select a role
+        </small>
+      </div>
+
+      <!-- Profile Image -->
+      <div class="form-group">
+        <label for="profileImage">Profile Image</label>
+        <input
+          type="file"
+          id="profileImage"
+          (change)="onFileChange($event)"
+          class="form-control"
+          accept="image/jpeg,image/png"
+          aria-describedby="profileImageError"
+        />
+        <small
+          id="profileImageError"
+          *ngIf="
+            signupForm.get('profileImage')?.invalid &&
+            signupForm.get('profileImage')?.touched
+          "
+          class="error-text"
+        >
+          Please upload a valid image (JPEG or PNG, max 5MB)
+        </small>
+      </div>
+
+      <!-- Error Message -->
       <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
 
+      <!-- Submit Button -->
       <button
         type="submit"
         class="genric-btn primary"
@@ -98,6 +223,7 @@
         Sign Up
       </button>
 
+      <!-- Social Login -->
       <div class="social-login">
         <p>Or Continue With</p>
         <div class="social-buttons">
@@ -118,6 +244,7 @@
         </div>
       </div>
 
+      <!-- Login Link -->
       <p class="signup-link">
         Already have an account? <a (click)="goToLogin()">Log in</a>
       </p>

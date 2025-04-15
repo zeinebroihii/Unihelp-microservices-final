@@ -24,16 +24,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.multipart.MultipartFile;
 
-
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
-
-
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-
 public class AuthController {
 
     private final UserService userService;
@@ -42,7 +42,6 @@ public class AuthController {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(
@@ -68,21 +67,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        // Log the email being used for login
         System.out.println("Attempting login for email: " + request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> {
-                System.out.println("User not found for email: " + request.getEmail());
-                return new RuntimeException("User not found");
-            });
+                .orElseThrow(() -> {
+                    System.out.println("User not found for email: " + request.getEmail());
+                    return new RuntimeException("User not found");
+                });
 
         if (user.isBanned()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is banned.");
         }
 
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -90,17 +88,46 @@ public class AuthController {
 
         System.out.println("User retrieved: " + user.getEmail());
 
+        // Calculate expiration time and convert to LocalDateTime
+        long expirationMillis = jwtUtils.getExpiration();
+        LocalDateTime expiresAt = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(System.currentTimeMillis() + expirationMillis),
+                ZoneId.systemDefault()
+        );
+
+        // Save token to Token table (not revoked)
+        Token token = Token.builder()
+                .token(jwt)
+                .expiresAt(expiresAt)
+                .user(user)
+                .revoked(false)
+                .build();
+        tokenRepository.save(token);
+
         return ResponseEntity.ok(LoginResponse.builder()
-            .token(jwt)
-            .type("Bearer")
-            .id(user.getId())
-            .email(user.getEmail())
-            .role(user.getRole().name())
-            .build());
+                .token(jwt)
+                .type("Bearer")
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build());
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok("User logged out successfully (no token provided).");
+        }
+
+        String jwt = authHeader.substring(7);
+        Optional<Token> tokenOpt = tokenRepository.findByToken(jwt);
+        if (tokenOpt.isPresent()) {
+            Token token = tokenOpt.get();
+            token.setRevoked(true);
+            tokenRepository.save(token);
+        }
+
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("User logged out successfully.");
     }
@@ -114,14 +141,14 @@ public class AuthController {
     @GetMapping("/admin/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/admin/users/{id}/ban")
     public ResponseEntity<String> banUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         if (user.isBanned()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already banned.");
         }
@@ -133,7 +160,7 @@ public class AuthController {
     @PostMapping("/admin/users/{id}/unban")
     public ResponseEntity<String> unbanUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         if (!user.isBanned()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User is not banned.");
         }
@@ -145,7 +172,7 @@ public class AuthController {
     @PutMapping("/admin/users/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         user.setFirstName(updatedUser.getFirstName());
         user.setLastName(updatedUser.getLastName());
         user.setEmail(updatedUser.getEmail());
@@ -160,7 +187,7 @@ public class AuthController {
     @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         userRepository.delete(user);
         return ResponseEntity.ok("User deleted successfully.");
     }
@@ -170,6 +197,7 @@ public class AuthController {
         userService.generateAndSendEmailRestToken(email.getEmail());
         return ResponseEntity.ok("Password reset link sent to your email!");
     }
+
     @GetMapping("/reset-password")
     public ResponseEntity<String> verifyToken(@RequestParam String token) {
         Token resetToken = tokenRepository.findByToken(token)
@@ -181,6 +209,7 @@ public class AuthController {
 
         return ResponseEntity.ok("Token verified. Display password reset form.");
     }
+
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
         String token = request.getToken();

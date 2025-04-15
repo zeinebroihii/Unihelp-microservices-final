@@ -19,10 +19,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
 @Component
 @RefreshScope
-
 public class JwtUtils {
 
     @Value("${jwt.secret}")
@@ -86,5 +84,10 @@ public class JwtUtils {
 
     public List<String> extractRoles(String token) {
         return extractClaim(token, claims -> claims.get("roles", List.class));
+    }
+
+    // Add getter for expiration
+    public Long getExpiration() {
+        return expiration;
     }
 }

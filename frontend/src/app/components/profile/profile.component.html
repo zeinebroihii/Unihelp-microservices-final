@@ -1,0 +1,76 @@
+<div class="profile-background">
+  <div class="profile-card">
+    <!-- Error/Success Messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+    <!-- Loading State -->
+    <div *ngIf="!user" class="loading">Loading profile...</div>
+
+    <!-- Profile Display/Edit -->
+    <div *ngIf="user" class="profile-content">
+      <!-- Profile Image and Action Buttons -->
+      <div class="profile-header">
+        <button class="action-btn disconnect-btn" (click)="disconnect()">
+          <span class="icon disconnect-icon"></span> Disconnect
+        </button>
+        <div class="profile-image">
+          <img [src]="getProfileImageUrl()" alt="Profile Image" />
+        </div>
+        <button class="action-btn message-btn">
+          <span class="icon message-icon"></span> Message
+        </button>
+      </div>
+
+      <!-- View Mode -->
+      <div *ngIf="!isEditing" class="profile-details">
+        <h1 class="user-name">{{ user.firstName }} {{ user.lastName }}</h1>
+        <p class="user-location">{{ user.email }}</p>
+        <p class="user-title">{{ user.skills?.join(', ') || 'No skills listed' }}</p>
+        <p class="user-education">{{ user.bio || 'No bio provided' }}</p>
+        <p class="user-role"><strong>Role:</strong> {{ user.role }}</p>
+
+        <button (click)="toggleEdit()" class="show-more-btn">Edit Profile</button>
+      </div>
+
+      <!-- Edit Mode -->
+      <form *ngIf="isEditing" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input id="firstName" formControlName="firstName" class="form-control" />
+          <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched" class="text-danger">
+            First name is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input id="lastName" formControlName="lastName" class="form-control" />
+          <div *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched" class="text-danger">
+            Last name is required.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" formControlName="email" class="form-control" [disabled]="true" />
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea id="bio" formControlName="bio" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="skills">Skills (comma-separated)</label>
+          <input id="skills" formControlName="skills" class="form-control" />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="profileForm.invalid" class="save-btn">Save</button>
+          <button type="button" (click)="toggleEdit()" class="cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

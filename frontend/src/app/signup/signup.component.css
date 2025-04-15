@@ -1,12 +1,10 @@
-/* Container for the entire signup page */
 .signup-container {
   display: flex;
   min-height: 100vh;
   background: #fff;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
 }
 
-/* Left Section (Form) */
 .form-section {
   flex: 1;
   background: #fff;
@@ -17,7 +15,6 @@
   align-items: center;
 }
 
-/* Form Header */
 .form-header {
   display: flex;
   align-items: center;
@@ -27,7 +24,7 @@
 .form-header .dot {
   width: 10px;
   height: 10px;
-  background: #6C63FF; /* Purple dot */
+  background: #6c63ff;
   border-radius: 50%;
   margin-right: 10px;
 }
@@ -60,7 +57,9 @@
   text-transform: uppercase;
 }
 
-.form-group input {
+.form-group input,
+.form-group textarea,
+.form-group select {
   width: 100%;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -70,22 +69,97 @@
   transition: border-color 0.3s;
 }
 
-.form-group input::placeholder {
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group select {
+  appearance: none;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="%23333" d="M7 10l5 5 5-5z"/></svg>')
+  no-repeat right 10px center;
+  background-size: 12px;
+}
+
+.form-group input[type="file"] {
+  padding: 5px;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
   color: #aaa;
 }
 
-.form-group input:focus {
-  border-color: #6C63FF; /* Purple on focus */
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #6c63ff;
 }
 
-.form-group small {
+.form-group small.error-text,
+.form-group mat-error {
   color: #e74c3c;
   font-size: 12px;
-  display: block;
   margin-top: 5px;
+  display: block;
 }
 
-/* Error Message */
+mat-form-field {
+  width: 100%;
+  min-height: 60px;
+}
+
+mat-form-field .mat-form-field-outline {
+  color: #ccc;
+  border-radius: 5px;
+}
+
+mat-form-field.mat-focused .mat-form-field-outline {
+  color: #6c63ff;
+}
+
+mat-form-field .mat-form-field-label {
+  color: #333;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+mat-form-field .mat-form-field-flex {
+  padding: 10px;
+  background: #fff;
+  min-height: 40px;
+  align-items: center;
+}
+
+mat-chip-grid {
+  min-height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+mat-chip-grid input {
+  background: #fff;
+  padding: 5px;
+  color: #333;
+}
+
+mat-chip-grid input::placeholder {
+  color: #aaa;
+}
+
+mat-chip-row {
+  background-color: rgba(255, 98, 0, 0.5);
+  color: #fff;
+  font-size: 14px;
+  margin: 2px;
+  font-weight: 500;
+}
+
+mat-chip-row mat-icon {
+  color: #fff;
+}
+
 .error-message {
   color: #e74c3c;
   font-size: 14px;
@@ -93,11 +167,10 @@
   text-align: center;
 }
 
-/* Sign Up Button */
 .genric-btn.primary {
   width: 100%;
   padding: 12px;
-  background: #6C63FF; /* Purple button */
+  background: #6c63ff;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -111,7 +184,6 @@
   cursor: not-allowed;
 }
 
-/* Social Login */
 .social-login {
   text-align: center;
   margin: 20px 0;
@@ -152,7 +224,6 @@
   background: #f5f5f5;
 }
 
-/* Log In Link */
 .signup-link {
   text-align: center;
   font-size: 14px;
@@ -160,16 +231,14 @@
 }
 
 .signup-link a {
-  color: #6C63FF; /* Purple link */
+  color: #6c63ff;
   text-decoration: none;
-  cursor: pointer;
 }
 
 .signup-link a:hover {
   text-decoration: underline;
 }
 
-/* Right Section (Photo) */
 .photo-section {
   flex: 1;
   position: relative;
@@ -181,230 +250,32 @@
 .signup-photo {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures the photo covers the section */
-  z-index: 0;
+  object-fit: cover;
 }
 
-/* Orange Gradient Overlay */
 .photo-section::before {
   content: '';
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 98, 0, 0.5), rgba(255, 165, 0, 0.3));
+  z-index: 1;
 }
 
-
-
-  /* Left Section (Form) */
-
-  .form-section {
-    flex: 1;
-    background: #fff;
-    padding: 50px;
-    display: flex;
+@media (max-width: 768px) {
+  .signup-container {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
   }
-
-  /* Form Header */
-
-  .form-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .form-header .dot {
-    width: 10px;
-    height: 10px;
-    background: #6C63FF; /* Purple dot */
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-
-  .form-header h1 {
-    font-size: 32px;
-    color: #333;
-  }
-
-  .subheading {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 30px;
-  }
-
-  .sign-up-form {
-    max-width: 400px;
-    width: 100%;
-  }
-
-  .form-group {
-    margin-bottom: 20px;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-  }
-
-  .form-group input {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.3s;
-  }
-
-  .form-group input::placeholder {
-    color: #aaa;
-  }
-
-  .form-group input:focus {
-    border-color: #6C63FF; /* Purple on focus */
-  }
-
-  .form-group small {
-    color: #e74c3c;
-    font-size: 12px;
-    display: block;
-    margin-top: 5px;
-  }
-
-  /* Error Message */
-
-  .error-message {
-    color: #e74c3c;
-    font-size: 14px;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-
-  /* Sign Up Button */
-
-  .genric-btn.primary {
-    width: 100%;
-    padding: 12px;
-    background: #6C63FF; /* Purple button */
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-
-  .genric-btn.primary:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
-
-  /* Social Login */
-
-  .social-login {
-    text-align: center;
-    margin: 20px 0;
-  }
-
-  .social-login p {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 10px;
-  }
-
-  .social-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .social-btn {
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background: #fff;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-
-  .social-btn img {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-  }
-
-  .social-btn:hover {
-    background: #f5f5f5;
-  }
-
-  /* Log In Link */
-
-  .sign-up-link {
-    text-align: center;
-    font-size: 14px;
-    color: #666;
-  }
-
-  .sign-up-link a {
-    color: #6C63FF; /* Purple link */
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .sign-up-link a:hover {
-    text-decoration: underline;
-  }
-
-  /* Right Section (Photo) */
-
+  .form-section,
   .photo-section {
-    flex: 1;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .sign-up-photo {
     width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures the photo covers the section */
-    z-index: 0;
   }
-
-  /* Orange Gradient Overlay */
-
-  .photo-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, rgba(255, 98, 0, 0.5), rgba(255, 165, 0, 0.3)); /* Orange gradient overlay */
-    z-index: 1;
+  .photo-section {
+    height: 300px;
   }
-
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .sign-up-container {
-      flex-direction: column;
-    }
-
-    .form-section,
-    .photo-section {
-      flex: none;
-      width: 100%;
-    }
-
-    .photo-section {
-      height: 300px; /* Adjust height for smaller screens */
-    }
+  .form-section {
+    padding: 30px;
   }
+}

@@ -11,6 +11,14 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import {HttpClientModule} from "@angular/common/http";
 import { SignupComponent } from './signup/signup.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatInputModule} from "@angular/material/input";
+import {MatIconModule} from "@angular/material/icon";
+import {MatChipsModule} from "@angular/material/chips";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import { ProfileComponent } from './components/profile/profile.component';
+import {AuthGuard} from "./auth.guard";
+import {AuthService} from "./services/auth.service";
 
 @NgModule({
   declarations: [
@@ -20,15 +28,21 @@ import { SignupComponent } from './signup/signup.component';
     HomeComponent,
     LoginComponent,
     NotFoundComponent,
-    SignupComponent
+    SignupComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatFormFieldModule,
+    MatChipsModule,
+    MatIconModule,
+    MatInputModule,
   ],
-  providers: [],
+  providers: [AuthService, AuthGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
