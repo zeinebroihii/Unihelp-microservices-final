@@ -99,8 +99,8 @@ public class AuthController {
         return ResponseEntity.ok(users);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users/{id}")
+   // @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));

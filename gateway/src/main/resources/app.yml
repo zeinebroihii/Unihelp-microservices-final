@@ -12,6 +12,12 @@ spring:
             uri: lb://USER
             predicates:
               - Path=/api/auth/**
+
+          - id: r3
+            uri: lb://OFFRE
+            predicates:
+              - Path=/offres/**
+
   application:
     name: gateway-service
 server:

@@ -1,0 +1,11 @@
+
+
+server:
+  port: 8091
+spring:
+  application:
+    name: cours
+  config:
+    import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:9999}
+
+

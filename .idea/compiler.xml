@@ -20,7 +20,7 @@
         </processorPath>
         <module name="user" />
       </profile>
-      <profile name="Annotation profile for cours" enabled="true">
+      <profile name="Annotation profile for offres" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -28,6 +28,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="cours" />
+        <module name="offres" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -40,6 +41,7 @@
       <module name="cours" options="-parameters" />
       <module name="discovery" options="-parameters" />
       <module name="gateway" options="-parameters" />
+      <module name="offres" options="-parameters" />
       <module name="unihelp" options="-parameters" />
       <module name="user" options="-parameters" />
     </option>
