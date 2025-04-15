@@ -92,15 +92,13 @@ public class AuthController {
         return ResponseEntity.ok("User logged out successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users")
+    @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users/{id}")
+    @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -196,4 +194,13 @@ public class AuthController {
 
         return ResponseEntity.ok("Password successfully reset!");
     }
+    @GetMapping("/by-name")
+    public ResponseEntity<User> getUserByFullName(
+            @RequestParam String firstName,
+            @RequestParam String lastName) {
+        User user = userService.getUserByFullName(firstName, lastName);
+        return ResponseEntity.ok(user);
+    }
+
+
 }

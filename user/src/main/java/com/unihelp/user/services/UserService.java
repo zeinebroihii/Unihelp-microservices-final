@@ -4,13 +4,17 @@ import com.unihelp.user.entities.Token;
 import com.unihelp.user.repositories.TokenRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.unihelp.user.dto.RegisterRequest;
 import com.unihelp.user.entities.User;
 import com.unihelp.user.repositories.UserRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +50,6 @@ public class UserService {
                 .isBanned(false)
                 .build());
     }
-
     public void generateAndSendEmailRestToken(String email) throws MessagingException {
         Optional<User> userByEmail = userRepository.findByEmail(email);
 
@@ -65,6 +68,12 @@ public class UserService {
             System.out.println(resetLink);
         }
     }
+
+    public User getUserByFullName(String firstName, String lastName) {
+        return userRepository.findByFirstNameAndLastName(firstName, lastName)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec le nom complet : " + firstName + " " + lastName));
+    }
+
 
     private String generateActivationCode() {
         return UUID.randomUUID().toString();
