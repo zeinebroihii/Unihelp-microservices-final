@@ -14,10 +14,9 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
 
-      // Course detail route should be correctly defined here
       {
-        path: 'courses/:id',  // Use :id to capture the course ID
-        component: CourseDetailComponent, // Assuming the component is correctly imported
+        path: 'courses/:id',
+        component: CourseDetailComponent,
         data: {
           title: 'Course Detail'
         }

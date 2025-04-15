@@ -26,13 +26,14 @@ public class LessonService {
         lesson.setModule(module);
         return lessonRepository.save(lesson);
     }
-
-    // READ: Get all lessons for a module
     public List<Lesson> getLessonsByModule(Long moduleId) {
-        Module module = moduleRepository.findById(moduleId)
-                .orElseThrow(() -> new ModuleNotFoundException("Module not found"));
-        return module.getLessons();
+        System.out.println("Service: Fetching lessons for module " + moduleId);
+        List<Lesson> lessons = lessonRepository.findByModuleId(moduleId);
+        System.out.println("Service: Found " + lessons.size() + " lessons");
+        return lessons;
     }
+
+
 
     // READ: Get a specific lesson by ID
     public Lesson getLessonById(Long moduleId, Long lessonId) {
@@ -48,7 +49,7 @@ public class LessonService {
                 .orElseThrow(() -> new LessonNotFoundException("Lesson not found"));
 
         lesson.setTitle(updatedLesson.getTitle());
-        lesson.setContent(updatedLesson.getContent());
+        lesson.setContentUrl(updatedLesson.getContentUrl());
         return lessonRepository.save(lesson);
     }
 

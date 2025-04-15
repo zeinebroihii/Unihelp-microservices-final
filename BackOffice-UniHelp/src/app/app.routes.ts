@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './layout';
+import {CourseDetailComponent} from "./views/course-detail/course-detail.component";
 
 export const routes: Routes = [
   {
@@ -30,10 +31,7 @@ export const routes: Routes = [
         path: 'add-course',
         loadChildren: () => import('./views/add-course/routes').then((m) => m.routes)
       },
-      {
-        path: 'courses/:id',
-        loadChildren: () => import('./views/course-detail/routes').then((m) => m.routes)
-      },
+      { path: 'courses/:id', component: CourseDetailComponent },
 
 
       {

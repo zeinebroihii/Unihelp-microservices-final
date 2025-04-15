@@ -53,6 +53,7 @@ public class CourseService {
         });
         return courses;
     }
+
     public List<Course> getCoursesByInstructor(Long UserId) {
         List<Course> courses = courseRepository.findByUserId(UserId);
         courses.forEach(course -> {

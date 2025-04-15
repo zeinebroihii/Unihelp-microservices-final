@@ -25,7 +25,10 @@ export interface Module {
 }
 
 export interface Lesson {
-  id?: number;
+  id: number;
   title: string;
-  content?: string;
+  description?: string;
+  contentUrl?: string;
+  contentType?: 'pdf' | 'video';
+  thumbnailUrl?: string;
 }

@@ -21,8 +21,7 @@ interface Suggestion {
     RouterLink,
     NgClass,
     FormsModule,
-    NgIf,
-    NgOptimizedImage,
+    NgIf
   ],
   standalone: true,
 
@@ -88,6 +87,7 @@ export class CourseComponent implements OnInit {
         this.filteredCourses = data;
         this.searching = false;
       },
+
       error: (err) => {
         console.error('Error fetching courses:', err);
         this.searching = false;
