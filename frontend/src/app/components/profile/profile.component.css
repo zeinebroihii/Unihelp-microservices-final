@@ -127,8 +127,16 @@
   color: #666;
   margin: 5px 0;
 }
+.profile-details p {
+  color: #444;
+  font-size: 14px;
+  margin: 5px 0;
+}
 
-/* Show More / Edit Profile Button */
+.profile-details strong {
+  color: #333;
+}
+
 .show-more-btn {
   background: #ff6200;
   color: #fff;

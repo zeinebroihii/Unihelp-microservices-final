@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-signup',
@@ -14,6 +15,8 @@ export class SignupComponent implements OnInit {
   signupForm: FormGroup;
   errorMessage: string | null = null;
   separatorKeysCodes: number[] = [ENTER, COMMA];
+  showPassword = false;
+  currentStep = 1;
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +49,37 @@ export class SignupComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  nextStep(): void {
+    if (this.currentStep === 1) {
+      if (this.signupForm.get('firstName')?.valid && this.signupForm.get('lastName')?.valid) {
+        this.currentStep++;
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Incomplete Fields',
+          text: 'Please fill in all required fields to proceed.',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+    if (this.currentStep === 2) {
+      if (this.signupForm.get('email')?.valid && this.signupForm.get('password')?.valid) {
+        this.currentStep++;
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Incomplete Fields',
+          text: 'Please fill in all required fields to proceed.',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+  }
 
   addSkill(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
@@ -117,7 +151,15 @@ export class SignupComponent implements OnInit {
       next: (response) => {
         console.log('Registration successful:', response);
         this.errorMessage = null;
-        this.router.navigate(['/login']);
+        Swal.fire({
+          icon: 'success',
+          title: 'Sign Up Successful',
+          text: 'You have signed up successfully!',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          this.router.navigate(['/login']);
+        });
       },
       error: (err) => {
         console.error('Registration error:', err);

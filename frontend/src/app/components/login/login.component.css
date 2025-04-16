@@ -85,6 +85,28 @@
   margin-top: 5px;
 }
 
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 30px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #555;
+}
+
+.eye-icon:hover {
+  color: #000;
+}
+
 /* Forgot Password Link */
 .forgot-password {
   text-align: right;

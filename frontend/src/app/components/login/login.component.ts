@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -12,6 +13,8 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string | null = null;
   isLoading = false;
+  isModalOpen = false;
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -20,7 +23,7 @@ export class LoginComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', Validators.required],
     });
   }
 
@@ -65,6 +68,10 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
@@ -77,16 +84,28 @@ export class LoginComponent implements OnInit {
       this.authService.login(loginRequest).subscribe({
         next: () => {
           this.isLoading = false;
-          const role = this.authService.getUserRole();
-          if (role === 'ADMIN') {
-            this.router.navigate(['/admin-dashboard']);
-          } else {
-            this.router.navigate(['/profile']);
-          }
+          Swal.fire({
+            icon: 'success',
+            title: 'Login Successful',
+            text: 'You have logged in successfully!',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            const role = this.authService.getUserRole();
+            if (role === 'ADMIN') {
+              this.router.navigate(['/admin-dashboard']);
+            } else {
+              this.router.navigate(['/profile']);
+            }
+          });
         },
         error: (err) => {
           this.isLoading = false;
-          this.errorMessage = err.message || 'Login failed. Please check your credentials.';
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: 'Wrong credentials. Please try again.',
+          });
           // Clear localStorage on failed login
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -97,5 +116,9 @@ export class LoginComponent implements OnInit {
 
   goToSignUp(): void {
     this.router.navigate(['/signup']);
+  }
+
+  goToResetPassword(): void {
+    this.isModalOpen = true;
   }
 }

@@ -26,10 +26,11 @@
       <div *ngIf="!isEditing" class="profile-details">
         <h1 class="user-name">{{ user.firstName }} {{ user.lastName }}</h1>
         <p class="user-location">{{ user.email }}</p>
-        <p class="user-title">{{ user.skills?.join(', ') || 'No skills listed' }}</p>
-        <p class="user-education">{{ user.bio || 'No bio provided' }}</p>
+        <p class="user-id"><strong>ID:</strong> {{ user.id }}</p>
+        <p class="user-bio"><strong>Bio:</strong> {{ user.bio || 'No bio provided' }}</p>
+        <p class="user-skills"><strong>Skills:</strong> {{ user.skills?.join(', ') || 'No skills listed' }}</p>
         <p class="user-role"><strong>Role:</strong> {{ user.role }}</p>
-
+        <p class="user-banned"><strong>Banned:</strong> {{ user.banned ? 'Yes' : 'No' }}</p>
         <button (click)="toggleEdit()" class="show-more-btn">Edit Profile</button>
       </div>
 

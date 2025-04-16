@@ -142,6 +142,7 @@ public class AuthController {
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        System.out.println("User fetched: " + user);
         return ResponseEntity.ok(user);
     }
 

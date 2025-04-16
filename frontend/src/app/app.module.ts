@@ -19,6 +19,9 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import { ProfileComponent } from './components/profile/profile.component';
 import {AuthGuard} from "./auth.guard";
 import {AuthService} from "./services/auth.service";
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ResetPasswordModalComponent } from './components/reset-password-modal/reset-password-modal.component';
+
 
 @NgModule({
   declarations: [
@@ -29,7 +32,9 @@ import {AuthService} from "./services/auth.service";
     LoginComponent,
     NotFoundComponent,
     SignupComponent,
-    ProfileComponent
+    ProfileComponent,
+    ResetPasswordComponent,
+    ResetPasswordModalComponent,
   ],
   imports: [
     BrowserModule,
