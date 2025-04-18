@@ -1,0 +1,66 @@
+<div class="page-wrapper">
+  <div class="container">
+    <h2>Upcoming Events</h2>
+    <button mat-raised-button color="primary" [routerLink]="['/event-form']" *ngIf="isAdmin$ | async">
+      Create Event
+    </button>
+    <div class="event-grid">
+      <mat-card *ngFor="let event of events" class="event-card" @fadeIn>
+        <mat-card-header>
+          <mat-card-title>{{ event.titre }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="event-description">
+            {{ expandedEvents[event.eventId] ? event.description : (event.description | slice:0:100) + '...' }}
+          </p>
+          <span class="toggle-details" (click)="toggleEventDetails(event.eventId)">
+            {{ expandedEvents[event.eventId] ? 'See Less' : 'See More' }}
+          </span>
+          <div class="event-details">
+            <div class="event-date-location">
+              <span class="event-date">{{ event.date | date }}</span>
+              <span class="event-location">
+                <mat-icon class="location-icon">location_on</mat-icon>
+                {{ event.lieu }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <!-- Show Book Ticket and Cancel Ticket buttons only for non-admins -->
+          <ng-container *ngIf="!(isAdmin$ | async)">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="bookTicket(event.eventId)"
+              [disabled]="event.eventId === undefined || hasBooked[event.eventId]"
+            >
+              {{ hasBooked[event.eventId] ? 'Already Booked' : 'Book Ticket' }}
+            </button>
+            <button
+              mat-raised-button
+              color="warn"
+              (click)="cancelBooking(event.eventId)"
+              *ngIf="hasBooked[event.eventId]"
+              [disabled]="event.eventId === undefined"
+            >
+              Cancel Ticket
+            </button>
+          </ng-container>
+          <!-- Admin-only buttons -->
+          <ng-container *ngIf="isAdmin$ | async">
+            <button mat-raised-button color="accent" [routerLink]="['/event-form', event.eventId]" [disabled]="event.eventId === undefined">
+              Edit
+            </button>
+            <button mat-raised-button color="warn" (click)="deleteEvent(event.eventId)" [disabled]="event.eventId === undefined">
+              Delete
+            </button>
+            <button mat-raised-button color="primary" (click)="viewBookings(event.eventId)" [disabled]="event.eventId === undefined">
+              View Bookings
+            </button>
+          </ng-container>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

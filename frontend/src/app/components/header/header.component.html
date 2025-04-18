@@ -1,4 +1,4 @@
-<header id="header">
+<header id="header" [ngClass]="{'header-hidden': !isHeaderVisible, 'header-visible': isHeaderVisible}">
   <div class="header-top">
     <div class="container">
       <div class="row">
@@ -31,11 +31,12 @@
               <li><a href="blog-single.html">Blog Single</a></li>
             </ul>
           </li>
-          <li class="menu-has-children"><a href="#">Events</a>
-            <ul>
-              <li><a href="events.html">All Events</a></li>
+          <li class="menu-has-children relative">
+            <a href="#" class="hover:text-indigo-300">Events</a>
+            <ul class="absolute bg-white text-indigo-900 shadow-lg rounded-lg mt-2 hidden group-hover:block">
+              <li><a routerLink="/events" class="block px-4 py-2 hover:bg-indigo-100">All Events</a></li>
               <li><a href="event-details.html">Event Details</a></li>
-              <li><a href="tickets.html">My Tickets</a></li>
+              <li><a href="/tickets">My Tickets</a></li>
             </ul>
           </li>
           <li class="menu-has-children"><a href="#">Groups</a>

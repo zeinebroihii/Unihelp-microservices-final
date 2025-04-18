@@ -1,12 +1,9 @@
 package com.unihelp.event.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
-import java.util.Date;
-import java.util.ArrayList;
 
+import java.util.Date;
 
 @Entity
 @Getter
@@ -20,8 +17,33 @@ public class Ticket {
     private Long ticketId;
     private double discount;
     private Date dateAchat;
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+    private Long UserId;
 
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Event> events = new ArrayList<>();
+    // Getters and setters
+    public Long getTicketId() {
+        return ticketId;
+    }
+
+    public void setTicketId(Long ticketId) {
+        this.ticketId = ticketId;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
+    public Long getUserId() {
+        return UserId;
+    }
+
+    public void setUserId(Long userId) {
+        this.UserId = userId;
+    }
 }

@@ -1,6 +1,7 @@
 package com.unihelp.event.controller;
 
 import com.unihelp.event.entities.Event;
+import com.unihelp.event.entities.Ticket;
 import com.unihelp.event.services.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,5 +40,10 @@ public class EventController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
+    }
+
+    @GetMapping("/{id}/bookings")
+    public List<Ticket> getEventBookings(@PathVariable Long id) {
+        return eventService.getTicketsByEventId(id);
     }
 }

@@ -1,0 +1,124 @@
+.page-wrapper {
+  margin-top: 100px; /* Adjust this value to match the exact height of your header */
+  background-color: #f5f9ff; /* Light blue background for the event page */
+  min-height: calc(100vh - 100px); /* Ensure the page takes up the full viewport height minus the header */
+}
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Three columns like in the image */
+  gap: 20px;
+}
+
+.event-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: transform 0.2s;
+  padding: 16px;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+}
+
+mat-card-header {
+  padding-bottom: 8px;
+}
+
+mat-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.event-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.toggle-details {
+  font-size: 14px;
+  color: #6c63ff; /* Purple color to match the "Read More" in the image */
+  cursor: pointer;
+  display: block;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.toggle-details:hover {
+  color: #514aff; /* Slightly darker purple on hover */
+}
+
+.event-details {
+  margin-bottom: 12px;
+}
+
+.event-date-location {
+  display: flex;
+  flex-direction: column; /* Stack date and location vertically */
+}
+
+.event-date {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px; /* Small gap between date and location */
+}
+
+.event-location {
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
+.location-icon {
+  color: #ff6f61; /* Orange color for the location pin, like in the image */
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+mat-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+}
+
+button[mat-raised-button] {
+  border-radius: 20px; /* Rounded buttons */
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+button[color="primary"] {
+  background-color: #6c63ff; /* Base purple for "Book Ticket" and "View Bookings" */
+  color: #fff;
+}
+
+button[color="warn"] {
+  background-color: #8a82ff; /* Lighter purple for "Cancel Ticket" and "Delete" */
+  color: #fff;
+}
+
+button[color="accent"] {
+  background-color: #514aff; /* Darker purple for "Edit" */
+  color: #fff;
+}
