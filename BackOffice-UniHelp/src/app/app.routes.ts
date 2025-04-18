@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './layout';
+import { UsersComponent } from './views/users/users.component';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,10 @@ export const routes: Routes = [
       title: 'Home'
     },
     children: [
+      {
+        path: 'users',
+        loadChildren: () => import('./views/users/routes').then(m => m.routes)
+      },
       {
         path: 'dashboard',
         loadChildren: () => import('./views/dashboard/routes').then((m) => m.routes)
@@ -49,10 +54,6 @@ export const routes: Routes = [
       {
         path: 'charts',
         loadChildren: () => import('./views/charts/routes').then((m) => m.routes)
-      },
-      {
-        path: 'users',
-        loadChildren: () => import('./views/users/routes').then((m) => m.routes)
       },
       {
         path: 'pages',

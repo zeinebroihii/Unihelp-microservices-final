@@ -10,10 +10,25 @@ export const navItems: INavData[] = [
       text: 'NEW'
     }
   },
+  // Place this after the 'Base' or 'Buttons' entry, under 'Components'
   {
     name: 'Users',
     url: '/users',
-    iconComponent: { name: 'cil-user' }
+    iconComponent: { name: 'cil-user' },
+    children: [
+      {
+        name: 'List of Users',
+        url: '/users/list'
+      },
+      {
+        name: 'Banned Users',
+        url: '/users/banned'
+      },
+      {
+        name: 'Active Users',
+        url: '/users/active'
+      }
+    ]
   },
   {
     title: true,

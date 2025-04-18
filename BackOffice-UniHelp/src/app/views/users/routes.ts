@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
-import { UsersComponent } from './users.component';
 
 export const routes: Routes = [
+  { path: '', redirectTo: 'list', pathMatch: 'full' },
   {
-    path: '',
-    component: UsersComponent,
-    data: {
-      title: 'Users'
-    }
+    path: 'list',
+    loadComponent: () => import('./users-list/users-list.component').then(m => m.UsersListComponent)
+  },
+  {
+    path: 'banned',
+    loadComponent: () => import('./banned-users/banned-users.component').then(m => m.BannedUsersComponent)
+  },
+  {
+    path: 'active',
+    loadComponent: () => import('./active-users/active-users.component').then(m => m.ActiveUsersComponent)
   }
 ];
