@@ -1,32 +1,195 @@
-/* Background with gradient and blurred circles */
+/* Modern Profile Card Redesign */
+.modern-bg {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f4f8fc 60%, #e3e9f7 100%);
+}
+
+.modern-profile-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(44, 62, 80, 0.15);
+  padding: 36px 36px 28px 36px;
+  max-width: 420px;
+  width: 100%;
+  margin: 30px 0;
+  position: relative;
+  overflow: visible;
+}
+
+.modern-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.modern-profile-image {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  flex-shrink: 0;
+}
+
+.modern-profile-image img {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+}
+
+.modern-status-dot {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e74c3c;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(44, 62, 80, 0.08);
+}
+.modern-status-dot.active {
+  background: #23c16b;
+}
+
+.modern-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modern-profile-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-user-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  color: #222;
+}
+
+.modern-role-tag {
+  background: #ff6200;
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 12px;
+  padding: 2px 12px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.modern-user-email {
+  font-size: 0.98rem;
+  color: #555;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.modern-user-id {
+  font-size: 0.75rem;
+  color: #bbb;
+  margin-bottom: 2px;
+}
+
+.modern-profile-details {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.modern-user-bio {
+  color: #444;
+  font-size: 1rem;
+  margin-bottom: 18px;
+}
+
+.modern-user-skills {
+  margin-bottom: 18px;
+}
+
+.modern-skill-tag {
+  display: inline-block;
+  background: #e3e9f7;
+  color: #2c3e50;
+  font-size: 0.92rem;
+  border-radius: 14px;
+  padding: 4px 14px;
+  margin: 0 7px 7px 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.modern-edit-btn {
+  display: block;
+  width: 100%;
+  background: #ff6200;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 0;
+  font-size: 1.06rem;
+  font-weight: 600;
+  margin-top: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.modern-edit-btn:hover {
+  background: #e55a00;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modern-profile-card {
+    padding: 20px 6px 18px 6px;
+  }
+  .modern-profile-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .modern-profile-info {
+    align-items: flex-start;
+  }
+}
+
+/* Background with image and overlay */
 .profile-background {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ff6200 0%, #ff8c00 100%);
+  background: url('/assets/img/banner-bg.jpg') no-repeat center center fixed;
+  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   overflow: hidden;
+  padding-top: 150px; /* Increased to clear header */
+}
+
+.profile-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(34, 37, 51, 0.8);
+  z-index: 0;
+  pointer-events: none; /* Prevent overlay from capturing mouse events */
 }
 
 /* Blurred circle decorations */
-.profile-background::before,
 .profile-background::after {
   content: '';
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 140, 0, 0.3);
   filter: blur(50px);
-}
-
-.profile-background::before {
-  width: 300px;
-  height: 300px;
-  top: -50px;
-  left: -50px;
-}
-
-.profile-background::after {
   width: 400px;
   height: 400px;
   bottom: -100px;
@@ -39,11 +202,14 @@
   border-radius: 20px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   width: 90%;
-  max-width: 500px;
-  padding: 20px;
+  max-width: 600px;
+  padding: 30px;
   position: relative;
   text-align: center;
+  z-index: 1; /* Ensure card is above overlay */
 }
+
+/* Rest of the existing styles remain unchanged */
 
 /* Profile header (image and buttons) */
 .profile-header {
@@ -127,6 +293,7 @@
   color: #666;
   margin: 5px 0;
 }
+
 .profile-details p {
   color: #444;
   font-size: 14px;
@@ -250,4 +417,51 @@
   font-size: 16px;
   color: #666;
   margin: 20px 0;
+}
+
+/* Status dot, skill tags, and role tags */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: red;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.status-dot.active {
+  background-color: green;
+}
+
+.skill-tag {
+  display: inline-block;
+  background-color: #e0e0e0;
+  border-radius: 15px;
+  padding: 5px 10px;
+  margin: 5px 5px 0 0;
+  font-size: 12px;
+}
+
+.role-tag {
+  display: inline-block;
+  background-color: #ff6200;
+  color: white;
+  border-radius: 15px;
+  padding: 5px 10px;
+  margin: 5px 0;
+  font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-card {
+    padding: 20px;
+  }
+  .profile-header {
+    flex-direction: column;
+  }
+  .action-btn {
+    margin-top: 10px;
+  }
 }

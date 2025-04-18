@@ -1,23 +1,41 @@
-/* Container for the entire login page */
 .login-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
-  background: #fff;
+  background: url('/assets/img/banner-bg.jpg') no-repeat center center fixed;
+  background-size: cover;
   font-family: 'Arial', sans-serif;
+  padding-top: 150px;
+  position: relative;
 }
 
-/* Left Section (Form) */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(34, 37, 51, 0.8); /* Dark blue overlay */
+  z-index: 0;
+}
+
 .form-section {
   flex: 1;
-  background: #fff;
-  padding: 50px;
+  background: transparent; /* Fully transparent background */
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-top: -50px; /* Move form up */
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-/* Form Header */
 .form-header {
   display: flex;
   align-items: center;
@@ -34,12 +52,12 @@
 
 .form-header h1 {
   font-size: 32px;
-  color: #333;
+  color: #FFFFFF;
 }
 
 .subheading {
   font-size: 16px;
-  color: #666;
+  color: #CCCCCC;
   margin-bottom: 30px;
 }
 
@@ -55,7 +73,7 @@
 .form-group label {
   display: block;
   font-size: 14px;
-  color: #333;
+  color: #FFFFFF;
   margin-bottom: 5px;
   text-transform: uppercase;
 }
@@ -75,7 +93,7 @@
 }
 
 .form-group input:focus {
-  border-color: #6C63FF; /* Purple on focus */
+  border-color: #6C63FF;
 }
 
 .form-group small {
@@ -104,7 +122,7 @@
 }
 
 .eye-icon:hover {
-  color: #000;
+  color: #fff;
 }
 
 /* Forgot Password Link */
@@ -157,7 +175,7 @@
 
 .social-login p {
   font-size: 14px;
-  color: #666;
+  color: #fff;
   margin-bottom: 10px;
 }
 
@@ -194,7 +212,7 @@
 .signup-link {
   text-align: center;
   font-size: 14px;
-  color: #666;
+  color: #fff;
 }
 
 .signup-link a {
@@ -208,31 +226,9 @@
 
 /* Right Section (Photo) */
 .photo-section {
-  flex: 1;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: none;
 }
 
-.login-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ensures the photo covers the section */
-  z-index: 0;
-}
-
-/* Orange Gradient Overlay */
-.photo-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(255, 98, 0, 0.5), rgba(255, 165, 0, 0.3)); /* Orange gradient overlay */
-  z-index: 1;
-}
 .genric-btn.primary.loading::before {
   content: '';
   display: inline-block;
@@ -251,18 +247,19 @@
   }
 }
 
+/* Navbar */
+.navbar {
+  background-color: #04091E; /* Match the navbar color */
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .login-container {
     flex-direction: column;
   }
 
-  .form-section, .photo-section {
+  .form-section {
     flex: none;
     width: 100%;
-  }
-
-  .photo-section {
-    height: 300px; /* Adjust height for smaller screens */
   }
 }

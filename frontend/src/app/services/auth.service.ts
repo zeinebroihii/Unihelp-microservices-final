@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -31,7 +31,7 @@ export interface User {
   lastName: string;
   email: string;
   bio?: string;
-  skills?: string[];
+  skills?: string;
   profileImage?: string;
   role: string;
   banned: boolean;
@@ -131,11 +131,21 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Admin only: fetch user by ID
+   */
   getUserById(id: number): Observable<User> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
     return this.http
-      .get<User>(`${this.apiUrl}/admin/users/${id}`)
+      .get<User>(`${this.apiUrl}/admin/users/${id}`, { headers })
       .pipe(catchError(this.handleError));
   }
+
+
 
   banUser(id: number): Observable<string> {
     return this.http
@@ -150,8 +160,27 @@ export class AuthService {
   }
 
   updateUser(id: number, user: User): Observable<string> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    console.log('[AuthService.updateUser] Token:', token);
+    console.log('[AuthService.updateUser] Authorization header:', headers.get('Authorization'));
+    // Always use /admin/users/{id} for update
     return this.http
-      .put<string>(`${this.apiUrl}/admin/users/${id}`, user)
+      .put<string>(`${this.apiUrl}/admin/users/${id}`, user, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  updateOwnProfile(id: number, user: User): Observable<string> {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http
+      .put<string>(`${this.apiUrl}/users/${id}`, user, { headers })
       .pipe(catchError(this.handleError));
   }
 
@@ -160,6 +189,7 @@ export class AuthService {
       .delete<string>(`${this.apiUrl}/admin/users/${id}`)
       .pipe(catchError(this.handleError));
   }
+
   getCurrentUserProfile(): Observable<User> {
     return this.http
       .get<User>(`${this.apiUrl}/profile`)

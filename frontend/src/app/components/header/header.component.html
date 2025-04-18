@@ -59,11 +59,20 @@
             </ul>
           </li>
           <li><a href="gamification.html">Leaderboard</a></li>
-          <li class="login-signup">
+          <li *ngIf="!isLoggedIn" class="login-signup">
             <a routerLink="/login" class="btn btn-outline-primary">Login</a>
           </li>
-          <li class="login-signup">
+          <li *ngIf="!isLoggedIn" class="login-signup">
             <a routerLink="/signup" class="btn btn-primary">Sign Up</a>
+          </li>
+          <li *ngIf="isLoggedIn" class="menu-has-children">
+            <a href="#" (click)="$event.preventDefault(); toggleOptions()">
+              <i class="fa fa-user"></i> <i class="fa fa-caret-down"></i>
+            </a>
+            <ul *ngIf="showOptions">
+              <li><a routerLink="/profile">Profile</a></li>
+              <li><a (click)="toggleLoginState()">Logout</a></li>
+            </ul>
           </li>
         </ul>
       </nav>

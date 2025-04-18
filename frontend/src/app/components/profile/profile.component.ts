@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-
+import Swal from 'sweetalert2';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import {AuthService, User} from "../../services/auth.service";
-import {Router} from "@angular/router";
+import { AuthService, User } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -16,6 +16,7 @@ export class ProfileComponent implements OnInit {
   isEditing = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  skillsDisplay: string = 'No skills listed';
 
   constructor(private authService: AuthService, private fb: FormBuilder, private router: Router) {
     this.profileForm = this.fb.group({
@@ -37,14 +38,17 @@ export class ProfileComponent implements OnInit {
       const { id } = JSON.parse(userData);
       this.authService.getUserById(id).subscribe({
         next: (user: User) => {
+          console.log('user:', user); // Debug
+          console.log('user.skills:', user.skills); // Debug
           this.user = user;
           this.profileForm.patchValue({
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
             bio: user.bio || '',
-            skills: user.skills ? user.skills.join(', ') : '',
+            skills: user.skills || '', // Treat as string
           });
+          this.updateSkillsDisplay();
         },
         error: (error: HttpErrorResponse) => {
           this.errorMessage = error.message;
@@ -63,22 +67,50 @@ export class ProfileComponent implements OnInit {
 
   saveProfile(): void {
     if (this.profileForm.valid && this.user) {
-      const updatedUser: User = {
-        ...this.user,
+      const updatedUser: any = {
         firstName: this.profileForm.get('firstName')?.value,
         lastName: this.profileForm.get('lastName')?.value,
+        email: this.user.email, // Use the current email (or from form if editable)
         bio: this.profileForm.get('bio')?.value,
-        skills: this.profileForm.get('skills')?.value.split(',').map((s: string) => s.trim()),
+        skills: this.profileForm.get('skills')?.value?.trim() || ''
       };
+      // Keep the existing profile image if present
+      if (this.user.profileImage) {
+        updatedUser.profileImage = this.user.profileImage;
+      }
+      // Keep the existing role if present
+      if (this.user.role) {
+        updatedUser.role = this.user.role;
+      }
+      console.log('Payload sent to backend:', updatedUser);
 
       this.authService.updateUser(this.user.id, updatedUser).subscribe({
         next: () => {
-          this.successMessage = 'Profile updated successfully!';
           this.isEditing = false;
-          this.user = { ...this.user, ...updatedUser };
+          this.loadUserProfile(); // Reload the profile from backend
+          Swal.fire({
+            icon: 'success',
+            title: 'Profile updated!',
+            text: 'Your profile has been updated successfully.',
+            timer: 1800,
+            showConfirmButton: false
+          });
+          this.errorMessage = null; // Clear any previous error
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage = error.message;
+          // Only show a user-friendly error if truly an error
+          let msg = 'An error occurred while updating your profile.';
+          if (error.error && typeof error.error === 'string') {
+            msg = error.error;
+          } else if (error.status && error.status !== 200) {
+            msg = error.message;
+          }
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: msg
+          });
+          this.errorMessage = null; // Don't show the default error box
         },
       });
     }
@@ -99,9 +131,16 @@ export class ProfileComponent implements OnInit {
       error: (error: HttpErrorResponse) => {
         console.error('Logout failed:', error.message);
         this.errorMessage = error.message;
-        // Navigate to login even on error, since localStorage is cleared
         this.router.navigate(['/login']);
       },
     });
+  }
+
+  updateSkillsDisplay(): void {
+    if (this.user && this.user.skills) {
+      this.skillsDisplay = this.user.skills.trim();
+    } else {
+      this.skillsDisplay = 'No skills listed';
+    }
   }
 }

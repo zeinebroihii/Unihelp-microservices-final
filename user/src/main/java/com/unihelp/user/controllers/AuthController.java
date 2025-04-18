@@ -199,6 +199,35 @@ public class AuthController {
         return ResponseEntity.ok("Password reset link sent to your email!");
     }
 
+    // New endpoint for users to update their own profile
+    @PutMapping("/users/{id}")
+    public ResponseEntity<String> updateOwnProfile(@PathVariable Long id, @RequestBody User updatedUser) {
+        // Get the authenticated user's email
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedEmail = authentication.getName();
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Allow update if the authenticated user is updating their own profile or is an admin
+        if (!user.getEmail().equals(authenticatedEmail) &&
+            authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this profile.");
+        }
+
+        // Only allow updating profile fields, not role or banned status
+        user.setFirstName(updatedUser.getFirstName());
+        user.setLastName(updatedUser.getLastName());
+        user.setEmail(updatedUser.getEmail());
+        user.setBio(updatedUser.getBio());
+        user.setSkills(updatedUser.getSkills());
+        user.setProfileImage(updatedUser.getProfileImage());
+        // Do NOT update role or banned status here
+
+        userRepository.save(user);
+        return ResponseEntity.ok("Profile updated successfully.");
+    }
+
     @GetMapping("/reset-password")
     public ResponseEntity<String> verifyToken(@RequestParam String token) {
         Token resetToken = tokenRepository.findByToken(token)

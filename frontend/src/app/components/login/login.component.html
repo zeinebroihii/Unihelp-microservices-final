@@ -1,3 +1,4 @@
+<app-header></app-header>
 <div class="login-container">
   <!-- Left Section (Form) -->
   <div class="form-section">
@@ -79,11 +80,6 @@
         Don’t have account? <a (click)="goToSignUp()">Sign up</a>
       </p>
     </form>
-  </div>
-
-  <!-- Right Section (Photo) -->
-  <div class="photo-section">
-    <img src="assets/ghibli-students.jpg" alt="Students Studying" class="login-photo" />
   </div>
 
   <app-reset-password-modal *ngIf="isModalOpen" (close)="isModalOpen = false"></app-reset-password-modal>
