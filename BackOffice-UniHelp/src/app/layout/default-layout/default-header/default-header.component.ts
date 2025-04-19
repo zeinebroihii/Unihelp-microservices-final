@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { UserService, User } from '../../../services/user.service';
 
 import {
   AvatarComponent,
@@ -27,9 +28,39 @@ import { IconDirective } from '@coreui/icons-angular';
 @Component({
     selector: 'app-default-header',
     templateUrl: './default-header.component.html',
-  imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective, HeaderNavComponent, NavItemComponent, NavLinkDirective, RouterLink, RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent, DropdownComponent, DropdownToggleDirective, AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
+    standalone: true,
+    imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective, HeaderNavComponent, NavItemComponent, NavLinkDirective, RouterLink, RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent, DropdownComponent, DropdownToggleDirective, AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
 })
-export class DefaultHeaderComponent extends HeaderComponent {
+export class DefaultHeaderComponent extends HeaderComponent implements OnInit {
+
+  public currentUser: User | null = null;
+  public avatarUrl: string = './assets/images/avatars/8.jpg'; // fallback
+  private userService = inject(UserService);
+
+  ngOnInit(): void {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const { id } = JSON.parse(userData);
+        this.userService.getUserById(id).subscribe({
+          next: (user: User) => {
+            console.log('Loaded user:', user); // Debug user info
+            this.currentUser = user;
+            if (user.profileImage) {
+              this.avatarUrl = user.profileImage.startsWith('data:')
+                ? user.profileImage
+                : `data:image/png;base64,${user.profileImage}`;
+            }
+          },
+          error: () => {
+            // fallback remains
+          }
+        });
+      }
+    } catch (e) {
+      // fallback remains
+    }
+  }
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -45,9 +76,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor() {
-    super();
-  }
+
 
   logout(): void {
     // Optionally: Call backend logout endpoint here

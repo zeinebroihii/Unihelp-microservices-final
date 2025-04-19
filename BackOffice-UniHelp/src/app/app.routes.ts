@@ -2,8 +2,13 @@ import { Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './layout';
 import { UsersComponent } from './views/users/users.component';
 import { AdminGuard } from './admin.guard';
+import { SessionHandoffComponent } from './views/session-handoff/session-handoff.component';
 
 export const routes: Routes = [
+  {
+    path: 'session-handoff',
+    component: SessionHandoffComponent
+  },
   {
     path: '',
     redirectTo: 'dashboard',

@@ -4,6 +4,34 @@
 <div *ngIf="error" class="alert alert-danger my-4">
   {{ error }}
 </div>
+<div class="mb-3 d-flex flex-wrap align-items-center gap-2 justify-content-between">
+  <div class="d-flex gap-3 align-items-center" style="background: #f8f9fa; border-radius: 2rem; padding: 0.75rem 1.25rem;">
+  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterRole">
+    <option value="">Role: All</option>
+    <option *ngFor="let role of uniqueRoles" [value]="role">{{ role }}</option>
+  </select>
+  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterBanned">
+    <option value="">Banned: All</option>
+    <option value="banned">Banned</option>
+    <option value="notbanned">Not Banned</option>
+  </select>
+</div>
+  <div style="min-width:170px;max-width:220px;">
+    <div class="input-group input-group-sm">
+      <input
+        type="text"
+        class="form-control"
+        style="padding-right:2.5rem;"
+        placeholder="Search..."
+        [(ngModel)]="searchTerm"
+      />
+      <span class="input-group-text bg-white border-start-0" style="position:absolute;right:0;z-index:10;">
+        <i class="bi bi-search"></i>
+      </span>
+    </div>
+  </div>
+</div>
+
 <table *ngIf="!loading && !error" class="table table-striped">
   <thead>
     <tr>
@@ -15,7 +43,7 @@
     </tr>
   </thead>
   <tbody>
-    <ng-container *ngFor="let user of users; let i = index">
+    <ng-container *ngFor="let user of filteredUsers; let i = index">
       <tr>
         <th scope="row">{{ i + 1 }}</th>
         <td>

@@ -19,6 +19,36 @@ export class UsersListComponent implements OnInit {
   editUserData: Partial<User> = {};
   expandedUserId: number | null = null;
 
+  searchTerm: string = '';
+  filterRole: string = '';
+  filterBanned: string = '';
+
+  get uniqueRoles(): string[] {
+    // Get all unique roles from the users list
+    return Array.from(new Set(this.users.map(u => u.role).filter(Boolean)));
+  }
+
+  get filteredUsers(): User[] {
+    let filtered = this.users;
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      filtered = filtered.filter(user =>
+        (user.firstName + ' ' + user.lastName).toLowerCase().includes(term) ||
+        user.email.toLowerCase().includes(term) ||
+        (user.skills || '').toLowerCase().includes(term)
+      );
+    }
+    if (this.filterRole) {
+      filtered = filtered.filter(user => user.role === this.filterRole);
+    }
+    if (this.filterBanned) {
+      filtered = filtered.filter(user =>
+        this.filterBanned === 'banned' ? user.banned : !user.banned
+      );
+    }
+    return filtered;
+  }
+
   toggleExpand(userId: number) {
     this.expandedUserId = this.expandedUserId === userId ? null : userId;
   }

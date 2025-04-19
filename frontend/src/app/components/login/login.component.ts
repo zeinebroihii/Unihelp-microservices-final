@@ -49,7 +49,7 @@ export class LoginComponent implements OnInit {
         next: () => {
           const role = this.authService.getUserRole();
           if (role === 'ADMIN') {
-            this.router.navigate(['/profile']);
+            this.router.navigate(['/dashboard']);
           } else {
             this.router.navigate(['/profile']);
           }
@@ -101,7 +101,7 @@ export class LoginComponent implements OnInit {
                 email: response.email,
                 role: response.role
               });
-              window.location.href = `http://localhost:4201/?token=${encodeURIComponent(token)}&user=${encodeURIComponent(user)}`;
+              window.location.href = `http://localhost:4201/session-handoff?token=${encodeURIComponent(token)}&user=${encodeURIComponent(user)}`;
             });
           } else {
             // Non-admin: store session in localStorage

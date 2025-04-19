@@ -45,6 +45,10 @@ export class AppComponent implements OnInit {
       // Remove token/user from URL for security
       window.history.replaceState({}, document.title, window.location.pathname);
       console.debug('[AppComponent] Session handoff: token and user stored in localStorage.');
+      // Force redirect to /dashboard if not already there
+      if (window.location.pathname !== '/dashboard') {
+        window.location.replace('/dashboard');
+      }
     }
 
     this.#router.events.pipe(
