@@ -49,6 +49,12 @@ export class DefaultHeaderComponent extends HeaderComponent {
     super();
   }
 
+  logout(): void {
+    // Optionally: Call backend logout endpoint here
+    localStorage.clear();
+    window.location.href = 'http://localhost:4200/login';
+  }
+
   sidebarId = input('sidebar1');
 
   public newMessages = [

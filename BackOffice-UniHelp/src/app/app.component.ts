@@ -35,6 +35,17 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Session handoff: store token/user from URL to localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const user = urlParams.get('user');
+    if (token && user) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', user);
+      // Remove token/user from URL for security
+      window.history.replaceState({}, document.title, window.location.pathname);
+      console.debug('[AppComponent] Session handoff: token and user stored in localStorage.');
+    }
 
     this.#router.events.pipe(
         takeUntilDestroyed(this.#destroyRef)

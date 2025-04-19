@@ -82,22 +82,45 @@ export class LoginComponent implements OnInit {
       };
 
       this.authService.login(loginRequest).subscribe({
-        next: () => {
+        next: (response) => {
           this.isLoading = false;
-          Swal.fire({
-            icon: 'success',
-            title: 'Login Successful',
-            text: 'You have logged in successfully!',
-            showConfirmButton: false,
-            timer: 1500
-          }).then(() => {
-            const role = this.authService.getUserRole();
-            if (role === 'ADMIN') {
-              this.router.navigate(['/admin-dashboard']);
-            } else {
+          const role = response.role;
+          if (role === 'ADMIN') {
+            // Do NOT store session in localStorage for admin
+            Swal.fire({
+              icon: 'success',
+              title: 'Login Successful',
+              text: 'You have logged in successfully!',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
+              // Pass token and user as query params for handoff
+              const token = response.token;
+              const user = JSON.stringify({
+                id: response.id,
+                email: response.email,
+                role: response.role
+              });
+              window.location.href = `http://localhost:4201/?token=${encodeURIComponent(token)}&user=${encodeURIComponent(user)}`;
+            });
+          } else {
+            // Non-admin: store session in localStorage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify({
+              id: response.id,
+              email: response.email,
+              role: response.role
+            }));
+            Swal.fire({
+              icon: 'success',
+              title: 'Login Successful',
+              text: 'You have logged in successfully!',
+              showConfirmButton: false,
+              timer: 1500
+            }).then(() => {
               this.router.navigate(['/profile']);
-            }
-          });
+            });
+          }
         },
         error: (err) => {
           this.isLoading = false;

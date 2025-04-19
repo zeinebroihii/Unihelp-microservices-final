@@ -54,15 +54,17 @@ export class AuthService {
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request).pipe(
       tap((response) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem(
-          'user',
-          JSON.stringify({
-            id: response.id,
-            email: response.email,
-            role: response.role,
-          })
-        );
+        if (response.role !== 'ADMIN') {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              id: response.id,
+              email: response.email,
+              role: response.role,
+            })
+          );
+        }
       }),
       catchError(this.handleError)
     );

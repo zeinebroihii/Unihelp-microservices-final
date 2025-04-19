@@ -27,6 +27,31 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
+  banUser(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/users/${id}/ban`, {}, { responseType: 'text' })
+      .pipe(catchError(this.handleError));
+  }
+
+  unbanUser(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/users/${id}/unban`, {}, { responseType: 'text' })
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/users/${id}`, { responseType: 'text' })
+      .pipe(catchError(this.handleError));
+  }
+
+  modifyUser(id: number, user: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/users/${id}`, user, { responseType: 'text' })
+      .pipe(catchError(this.handleError));
+  }
+
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/admin/users/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred!';
     if (error.error instanceof ErrorEvent) {

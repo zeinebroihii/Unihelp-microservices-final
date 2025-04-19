@@ -38,6 +38,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@coreui/icons/css/all.min.css",
               "src/scss/styles.scss"
             ],
             "scripts": [],
