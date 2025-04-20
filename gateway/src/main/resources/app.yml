@@ -12,6 +12,8 @@ spring:
             uri: lb://USER
             predicates:
               - Path=/api/auth/**
+
+
   application:
     name: gateway-service
 server:

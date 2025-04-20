@@ -1,0 +1,17 @@
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\config\SecurityConfig.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\controllers\AuthController.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\dto\EmailRequest.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\dto\LoginRequest.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\dto\LoginResponse.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\dto\RegisterRequest.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\dto\ResetPasswordRequest.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\entities\Token.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\entities\User.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\entities\UserRole.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\repositories\TokenRepository.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\repositories\UserRepository.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\security\JwtAuthFilter.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\security\JwtUtils.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\security\UserDetailsServiceImpl.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\services\UserService.java
+C:\Users\MSI\Videos\Unihelp-microservices-final-main\user\src\main\java\com\unihelp\user\UserApplication.java

@@ -11,6 +11,7 @@ public class User {
     private String email;
     private String firstName;
     private String lastName;
+    private String profileImage;
     private Role role;
 
     public Object getRole() {
@@ -49,6 +50,12 @@ public class User {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+    public String getprofileImage() {
+        return profileImage;
+    }
 
+    public void setprofileImage(String profileImage) {
+        this.profileImage= profileImage;
+    }
 
 }
