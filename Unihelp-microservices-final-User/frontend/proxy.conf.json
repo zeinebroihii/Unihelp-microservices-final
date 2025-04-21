@@ -1,0 +1,11 @@
+{
+    "/api/ipapi": {
+      "target": "https://ipapi.co",
+      "secure": true,
+      "pathRewrite": {
+        "^/api/ipapi": ""
+      },
+      "changeOrigin": true,
+      "logLevel": "debug"
+    }
+}

@@ -1,9 +1,0 @@
-server:
-  port: 8073
-
-spring:
-  application:
-    name: user
-  config:
-    import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:9999}
-

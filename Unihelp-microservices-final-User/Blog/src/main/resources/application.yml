@@ -1,0 +1,13 @@
+server:
+  port: 8046
+spring:
+  application:
+    name: blog
+  config:
+    import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:9999}
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/
+
+
+

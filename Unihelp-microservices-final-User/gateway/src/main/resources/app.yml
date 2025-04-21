@@ -1,0 +1,23 @@
+spring:
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id : r1
+            uri: lb://COURS
+            predicates:
+              - Path=/api/courses/**
+
+          - id: r2
+            uri: lb://USER
+            predicates:
+              - Path=/api/auth/**
+
+          - id: r3
+            uri: lb://BLOG
+            predicates:
+              - Path=/api/blog/**
+  application:
+    name: gateway-service
+server:
+  port: 8888
