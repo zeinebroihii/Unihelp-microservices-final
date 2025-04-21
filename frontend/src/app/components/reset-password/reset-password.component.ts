@@ -59,17 +59,38 @@ export class ResetPasswordComponent implements OnInit, OnChanges {
           next: (response: any) => {
             this.isLoading = false;
             if (typeof response === 'string') {
-              if (response.toLowerCase().includes('success')) {
-                this.errorMessage = null;
-                this.successMessage = null;
-                this.emitSuccess();
-              } else {
-                this.errorMessage = response;
-              }
-            } else if (typeof response === 'object' && response !== null) {
+  const respStr = response.toLowerCase();
+  if (respStr.includes('success') || respStr.includes('sent') || respStr.includes('email')) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: 'Password reset link sent to your email.'
+    });
+    this.emitSuccess();
+  } else if (respStr.includes('not found') || respStr.includes('no user')) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: response
+    });
+    this.errorMessage = null;
+  } else {
+    Swal.fire({
+      icon: 'info',
+      title: 'Info',
+      text: response
+    });
+    this.errorMessage = null;
+  }
+} else if (typeof response === 'object' && response !== null) {
               // Only show error if response.message is a non-empty string and not a generic object
               if (typeof response.message === 'string' && response.message.trim() !== '' && !response.message.toLowerCase().includes('success')) {
-                this.errorMessage = response.message;
+                Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: response.message
+});
+this.errorMessage = null;
               } else if (
                 response.success === true ||
                 response.status === 'success' ||
@@ -85,17 +106,37 @@ export class ResetPasswordComponent implements OnInit, OnChanges {
             } else if (!response) {
               this.emitSuccess();
             } else {
-              this.errorMessage = 'Unexpected response from server.';
+              Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: 'Unexpected response from server.'
+});
+this.errorMessage = null;
             }
           },
           error: (err) => {
             this.isLoading = false;
             if (err.error && typeof err.error === 'object') {
-              this.errorMessage = err.error.message || 'Failed to send reset link. Please try again later.';
+              Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: err.error.message || 'Failed to send reset link. Please try again later.'
+});
+this.errorMessage = null;
             } else if (typeof err.error === 'string') {
-              this.errorMessage = err.error;
+              Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: err.error
+});
+this.errorMessage = null;
             } else {
-              this.errorMessage = err.message || 'Failed to send reset link. Please try again later.';
+              Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: err.message || 'Failed to send reset link. Please try again later.'
+});
+this.errorMessage = null;
             }
           },
         });
@@ -109,11 +150,21 @@ export class ResetPasswordComponent implements OnInit, OnChanges {
         this.authService.resetPasswordWithToken(this.token!, newPassword).subscribe({
           next: () => {
             this.isLoading = false;
-            this.successMessage = 'Password successfully reset! You can now log in.';
+            Swal.fire({
+  icon: 'success',
+  title: 'Success',
+  text: 'Password successfully reset! You can now log in.'
+});
+this.successMessage = null;
           },
           error: (err) => {
             this.isLoading = false;
-            this.errorMessage = err.error?.message || err.message || 'Failed to reset password. Please try again.';
+            Swal.fire({
+  icon: 'error',
+  title: 'Error',
+  text: err.error?.message || err.message || 'Failed to reset password. Please try again.'
+});
+this.errorMessage = null;
           },
         });
       }
