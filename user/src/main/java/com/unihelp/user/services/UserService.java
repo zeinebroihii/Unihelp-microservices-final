@@ -4,6 +4,7 @@ import com.unihelp.user.entities.Token;
 import com.unihelp.user.repositories.TokenRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,12 +25,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
+    private final org.springframework.mail.javamail.JavaMailSender javaMailSender;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenRepository tokenRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenRepository tokenRepository, org.springframework.mail.javamail.JavaMailSender javaMailSender) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
+        this.javaMailSender = javaMailSender;
     }
 
     public User registerUser(String firstName, String lastName, String email, String password,
@@ -77,9 +80,21 @@ public class UserService {
                     .build();
             tokenRepository.save(token);
 
-            String resetLink = "http://localhost:8070/reset-password?token=" + token.getToken();
-
+            String resetLink = "http://localhost:4200/login?token=" + token.getToken();
             System.out.println(resetLink);
+                        try {
+                System.out.println("[DEBUG] About to send reset email to: " + email);
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(email);
+                message.setSubject("Password Reset Link");
+                message.setText("Click the following link to reset your password: " + resetLink);
+                javaMailSender.send(message);
+                System.out.println("[DEBUG] Reset email sent successfully to: " + email);
+            } catch (Exception e) {
+                System.out.println("[ERROR] Failed to send reset email to: " + email);
+                e.printStackTrace();
+            }
+
         }
     }
 

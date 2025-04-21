@@ -111,7 +111,7 @@ export class AuthService {
   forgotPassword(email: string): Observable<string> {
     const request: EmailRequest = { email };
     return this.http
-      .post<string>(`${this.apiUrl}/forgot-password`, request)
+      .post(`${this.apiUrl}/forgot-password`, request, { responseType: 'text' })
       .pipe(catchError(this.handleError));
   }
 
@@ -122,6 +122,13 @@ export class AuthService {
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<string> {
+    return this.http
+      .post<string>(`${this.apiUrl}/reset-password`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  resetPasswordWithToken(token: string, newPassword: string): Observable<string> {
+    const request: ResetPasswordRequest = { token, newPassword };
     return this.http
       .post<string>(`${this.apiUrl}/reset-password`, request)
       .pipe(catchError(this.handleError));

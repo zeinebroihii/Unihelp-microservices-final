@@ -8,6 +8,14 @@
     </div>
     <p class="subheading">Welcome back! Please enter your details.</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+
+    <!-- Reset Password Modal -->
+    <app-reset-password-modal
+      *ngIf="isModalOpen"
+      [token]="resetToken"
+      (close)="closeResetModal()"
+    ></app-reset-password-modal>
+
       <div class="form-group">
         <label for="email">Email</label>
         <input
@@ -82,5 +90,5 @@
     </form>
   </div>
 
-  <app-reset-password-modal *ngIf="isModalOpen" (close)="isModalOpen = false"></app-reset-password-modal>
+
 </div>

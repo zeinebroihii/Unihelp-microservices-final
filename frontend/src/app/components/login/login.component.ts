@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import Swal from 'sweetalert2';
 
@@ -15,11 +15,13 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   isModalOpen = false;
   showPassword = false;
+  resetToken: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -28,6 +30,15 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Detect token in query params for password reset
+    this.route.queryParams.subscribe(params => {
+      const token = params['token'];
+      if (token) {
+        this.resetToken = token;
+        this.isModalOpen = true;
+      }
+    });
+
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
@@ -70,6 +81,16 @@ export class LoginComponent implements OnInit {
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+  }
+
+  goToResetPassword(): void {
+    this.isModalOpen = true;
+    this.resetToken = null;
+  }
+
+  closeResetModal(): void {
+    this.isModalOpen = false;
+    this.resetToken = null;
   }
 
   onSubmit(): void {
@@ -141,7 +162,4 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/signup']);
   }
 
-  goToResetPassword(): void {
-    this.isModalOpen = true;
-  }
 }
