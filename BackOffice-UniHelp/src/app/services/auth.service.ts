@@ -6,15 +6,15 @@ import { Observable, of } from 'rxjs';
 })
 export class AuthService {
   private mockUser = {
-    userId: 4,
-    role: 'STUDENT'
+    userId: 1,
+    role: 'ADMIN'
   };
 
   getCurrentUser(): Observable<{ userId: number; role: string }> {
     return of(this.mockUser);
   }
 
-  isStudent(): Observable<boolean> {
-    return of(this.mockUser.role === 'STUDENT');
+  isAdmin(): Observable<boolean> {
+    return of(this.mockUser.role === 'ADMIN');
   }
 }

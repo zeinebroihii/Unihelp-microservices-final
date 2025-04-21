@@ -1,9 +1,7 @@
 <div class="page-wrapper">
   <div class="container">
     <h2>Upcoming Events</h2>
-    <button mat-raised-button color="primary" [routerLink]="['/event-form']" *ngIf="isAdmin$ | async">
-      Create Event
-    </button>
+
     <div class="event-grid">
       <mat-card *ngFor="let event of events" class="event-card" @fadeIn>
         <mat-card-header>
@@ -28,7 +26,7 @@
         </mat-card-content>
         <mat-card-actions>
           <!-- Show Book Ticket and Cancel Ticket buttons only for non-admins -->
-          <ng-container *ngIf="!(isAdmin$ | async)">
+          <ng-container *ngIf="(isStudent$ | async)">
             <button
               mat-raised-button
               color="primary"
@@ -48,17 +46,7 @@
             </button>
           </ng-container>
           <!-- Admin-only buttons -->
-          <ng-container *ngIf="isAdmin$ | async">
-            <button mat-raised-button color="accent" [routerLink]="['/event-form', event.eventId]" [disabled]="event.eventId === undefined">
-              Edit
-            </button>
-            <button mat-raised-button color="warn" (click)="deleteEvent(event.eventId)" [disabled]="event.eventId === undefined">
-              Delete
-            </button>
-            <button mat-raised-button color="primary" (click)="viewBookings(event.eventId)" [disabled]="event.eventId === undefined">
-              View Bookings
-            </button>
-          </ng-container>
+
         </mat-card-actions>
       </mat-card>
     </div>

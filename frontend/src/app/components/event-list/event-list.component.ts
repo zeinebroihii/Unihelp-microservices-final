@@ -8,7 +8,6 @@ import { Ticket } from '../../models/ticket.model';
 import { User } from '../../models/user.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { ViewBookingsDialogComponent } from '../view-bookings-dialog/view-bookings-dialog.component';
 import { Observable, forkJoin } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
@@ -27,7 +26,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 })
 export class EventListComponent implements OnInit {
   events: Event[] = [];
-  isAdmin$: Observable<boolean>;
+  isStudent$: Observable<boolean>;
   userId?: number;
   userTickets: Ticket[] = [];
   hasBooked: { [eventId: number]: boolean } = {};
@@ -41,7 +40,7 @@ export class EventListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
-    this.isAdmin$ = this.authService.isAdmin();
+    this.isStudent$ = this.authService.isStudent();
   }
 
   ngOnInit(): void {
@@ -145,76 +144,5 @@ export class EventListComponent implements OnInit {
     }
   }
 
-  deleteEvent(eventId?: number): void {
-    if (eventId === undefined) {
-      this.snackBar.open('Event ID is missing.', 'Close', { duration: 3000 });
-      return;
-    }
-    if (confirm('Are you sure you want to delete this event?')) {
-      this.eventService.deleteEvent(eventId).subscribe({
-        next: () => {
-          this.events = this.events.filter(event => event.eventId !== eventId);
-          this.snackBar.open('Event deleted successfully!', 'Close', { duration: 3000 });
-        },
-        error: (err: any) => {
-          this.snackBar.open('Failed to delete event: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
-        }
-      });
-    }
-  }
 
-  viewBookings(eventId?: number): void {
-    if (eventId === undefined) {
-      this.snackBar.open('Event ID is missing.', 'Close', { duration: 3000 });
-      return;
-    }
-
-    // Find the event to get its title
-    const event = this.events.find(e => e.eventId === eventId);
-    const eventTitle = event?.titre || 'Event';
-
-    // Fetch tickets for the specific event
-    this.ticketService.getTicketsByEvent(eventId).subscribe({
-      next: (tickets: Ticket[]) => {
-        if (tickets.length === 0) {
-          // If no tickets, open the dialog directly
-          this.dialog.open(ViewBookingsDialogComponent, {
-            width: '500px',
-            data: { tickets, eventTitle }
-          });
-          return;
-        }
-
-        // Fetch user details for each ticket
-        const userObservables = tickets
-          .filter(ticket => ticket.userId !== undefined)
-          .map(ticket => this.userService.getUserById(ticket.userId!));
-        forkJoin(userObservables).subscribe({
-          next: (users: User[]) => {
-            // Combine tickets with user data
-            const enrichedTickets = tickets.map((ticket, index) => ({
-              ...ticket,
-              user: users[index]
-            }));
-            // Open the dialog with enriched tickets
-            this.dialog.open(ViewBookingsDialogComponent, {
-              width: '500px',
-              data: { tickets: enrichedTickets, eventTitle }
-            });
-          },
-          error: (err: any) => {
-            this.snackBar.open('Failed to load user details: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
-            // Fallback: Open dialog with tickets but no user details
-            this.dialog.open(ViewBookingsDialogComponent, {
-              width: '500px',
-              data: { tickets, eventTitle }
-            });
-          }
-        });
-      },
-      error: (err: any) => {
-        this.snackBar.open('Failed to load bookings: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
-      }
-    });
-  }
 }
