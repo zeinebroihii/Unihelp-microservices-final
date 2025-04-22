@@ -1,21 +1,34 @@
 <app-header></app-header>
 
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+<div class="container p-4">
+  <div class="row p-4">
+    <div class="input-group mb-3">
+      <select class="form-select" style="max-width: 150px;" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+        <option value="">All Categories</option>
+        <option value="IT">IT</option>
+        <option value="Science">Science</option>
+        <option value="LifeStyle">LifeStyle</option>
+        <option value="History">History</option>
+        <option value="Psychology">Psychology</option>
+      </select>
+      <input 
+        type="text" 
+        class="form-control" 
+        placeholder="Search..." 
+        [(ngModel)]="searchQuery" 
+        (input)="onFilterChange()"
+      >
+    </div>
+  </div>
+</div>
+
 <br>
 
 <div class="container">
   <div class="row mt-n5">
-    <div *ngFor="let blog of blogs;" class="col-lg-4 col-md-6 col-sm-12 mb-5 wow fadeInUp">
+    <div *ngFor="let blog of filteredBlogs;" class="col-lg-4 col-md-6 col-sm-12 mb-5 wow fadeInUp">
       <div class="blog-grid">
         <div class="blog-grid-img position-relative">
           <img *ngIf="blog.imagepath; else placeholder" [src]="getImageUrl(blog.imagepath)" alt="{{ blog.title }}">
@@ -31,8 +44,8 @@
               <li><i class="fas fa-user"></i> {{ blog.user?.firstName || 'User' }}</li>
               <li><i class="fas fa-comments"></i> {{ blog.comments?.length }}</li>
               <div *ngIf="isBlogDeletable(blog.userId)">
-                <li><a (click)="DeleteBlog(blog.idBlog)"><i class="fas fa-comments"></i> Delete</a></li>
-                <li><a [routerLink]="['/editblog', blog.idBlog]"><i class="fas fa-comments"></i> Edit</a></li>
+                <li><a (click)="DeleteBlog(blog.idBlog)"><i class="fas fa-trash"></i> Delete</a></li>
+                <li><a [routerLink]="['/editblog', blog.idBlog]"><i class="fas fa-edit"></i> Edit</a></li>
               </div>
             </ul>
           </div>
@@ -43,9 +56,10 @@
   <div class="row mt-6 wow fadeInUp" data-wow-delay=".6s">
     <div class="col-12">
       <div class="pagination text-small text-uppercase text-extra-dark-gray">
-        
+        <!-- Pagination logic here -->
       </div>
     </div>
   </div>
 </div>
+
 <app-footer></app-footer>
