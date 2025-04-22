@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {NgClass, NgForOf, NgIf, NgOptimizedImage} from "@angular/common";
-import {Router, RouterLink} from "@angular/router";  // <-- Import HttpClient
+import {Router, RouterLink,ActivatedRoute} from "@angular/router";  // <-- Import HttpClient
 import { trigger, transition, style, animate } from '@angular/animations';
 import {FormsModule} from "@angular/forms";
 import {debounceTime, Subject} from "rxjs";
@@ -52,8 +52,12 @@ export class CourseComponent implements OnInit {
   showDeleteModal = false;
   courseToDelete: Course | null = null;
   private searchSubject = new Subject<string>();
+  private courseAddedSource = new Subject<void>();
+  courseAdded$ = this.courseAddedSource.asObservable();
+  constructor(private http: HttpClient, private router: Router,private cd: ChangeDetectorRef,private route: ActivatedRoute ) {
 
-  constructor(private http: HttpClient, private router: Router,private cd: ChangeDetectorRef) {
+
+
   }
 
   ngOnInit(): void {
@@ -69,8 +73,15 @@ export class CourseComponent implements OnInit {
     }, 0);
 
 
-    // Fetch courses
-    this.fetchCourses();
+    this.route.queryParams.subscribe(params => {
+      if (params['refresh'] === 'true') {
+        this.fetchCourses();
+        // Clear query param to avoid repeated triggers
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      } else {
+        this.fetchCourses(); // Initial fetch
+      }
+    });
 
     // Debounce search input
     this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
@@ -94,6 +105,19 @@ export class CourseComponent implements OnInit {
       }
     });
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   onSearchChange(): void {
     this.showSuggestions = !!this.searchTerm;

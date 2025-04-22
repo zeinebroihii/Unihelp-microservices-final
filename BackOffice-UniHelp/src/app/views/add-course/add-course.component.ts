@@ -53,7 +53,7 @@ export class AddCourseComponent implements OnInit {
     this.isLoading = true;
     this.responseMessage = null;
     const apiUrl = 'http://localhost:8888/COURS/api/courses';
-    const userId = 2;
+    const userId = 3;
     const courseData = {...this.course, userId};
 
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
@@ -65,7 +65,7 @@ export class AddCourseComponent implements OnInit {
         this.isLoading = false;
         // Navigate to courses list after a short delay to show message
         setTimeout(() => {
-          this.router.navigate(['/courses']);
+          this.router.navigate(['/courses'], { queryParams: { refresh: 'true' } });
         }, 1000);
       },
       error: (error) => {
