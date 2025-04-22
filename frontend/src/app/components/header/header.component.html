@@ -45,12 +45,13 @@
               <li><a href="meetings.html">Chats</a></li>
             </ul>
           </li>
-          <li class="menu-has-children">
-            <a href="#">Courses</a>
-            <ul>
-              <li><a routerLink="/courses">All Courses</a></li>
-              <li><a routerLink="/course-details">Course Details</a></li>
-              <li><a routerLink="/my-courses">My Courses</a></li> <!-- Use routerLink -->
+          <li class="menu-has-children relative">
+            <a href="#" class="hover:text-indigo-300">Courses</a>
+            <ul class="absolute bg-white text-indigo-900 shadow-lg rounded-lg mt-2 hidden group-hover:block">
+              <li><a routerLink="/courses" class="block px-4 py-2 hover:bg-indigo-100">All Courses</a></li>
+              <li><a routerLink="/course-details" class="block px-4 py-2 hover:bg-indigo-100">Course Details</a></li>
+              <li><a routerLink="/my-courses" class="block px-4 py-2 hover:bg-indigo-100">My Courses</a></li>
+              <li> <a routerLink="/quiz" class="btn bg-green-500 text-white">Quiz Generator</a></li>
             </ul>
           </li>
 
