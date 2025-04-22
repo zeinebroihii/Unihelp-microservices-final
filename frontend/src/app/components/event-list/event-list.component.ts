@@ -8,8 +8,15 @@ import { Ticket } from '../../models/ticket.model';
 import { User } from '../../models/user.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import * as QRCode from 'qrcode';
+
+// Define a minimal interface for the user data returned by authService.getCurrentUser()
+interface AuthUser {
+  userId: number;
+  role: string;
+}
 
 @Component({
   selector: 'app-event-list',
@@ -19,18 +26,22 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     trigger('fadeIn', [
       state('void', style({ opacity: 0, transform: 'translateY(20px)' })),
       transition(':enter', [
-        animate('500ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
+        animate('400ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
       ])
     ])
   ]
 })
 export class EventListComponent implements OnInit {
   events: Event[] = [];
+  filteredEvents: Event[] = []; // New property for filtered events
   isStudent$: Observable<boolean>;
   userId?: number;
+  currentUser: AuthUser | null = null;
   userTickets: Ticket[] = [];
   hasBooked: { [eventId: number]: boolean } = {};
   expandedEvents: { [eventId: number]: boolean } = {};
+  qrCodes: { [eventId: number]: string | null } = {};
+  showQrCode: { [eventId: number]: boolean } = {};
 
   constructor(
     private eventService: EventService,
@@ -45,8 +56,11 @@ export class EventListComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.getCurrentUser().subscribe(user => {
-      this.userId = user.userId;
-      this.loadUserTickets();
+      this.currentUser = user;
+      this.userId = user?.userId;
+      if (this.userId) {
+        this.loadUserTickets();
+      }
       this.loadEvents();
     });
   }
@@ -59,13 +73,9 @@ export class EventListComponent implements OnInit {
     this.ticketService.getUserTickets(this.userId).subscribe({
       next: (tickets: Ticket[]) => {
         this.userTickets = tickets;
-        this.events.forEach(event => {
-          if (event.eventId) {
-            this.hasBooked[event.eventId] = this.userTickets.some(
-              ticket => ticket.event && ticket.event.eventId === event.eventId
-            );
-          }
-        });
+        this.updateHasBooked();
+        // Update filtered events after loading tickets
+        this.updateFilteredEvents();
       },
       error: (err: any) => {
         this.snackBar.open('Failed to load user tickets: ' + err.message, 'Close', { duration: 3000 });
@@ -79,12 +89,12 @@ export class EventListComponent implements OnInit {
         this.events = events;
         this.events.forEach(event => {
           if (event.eventId) {
-            this.hasBooked[event.eventId] = this.userTickets.some(
-              ticket => ticket.event && ticket.event.eventId === event.eventId
-            );
             this.expandedEvents[event.eventId] = false;
           }
         });
+        this.updateHasBooked();
+        // Update filtered events after loading all events
+        this.updateFilteredEvents();
       },
       error: (err: any) => {
         this.snackBar.open('Failed to load events: ' + err.message, 'Close', { duration: 3000 });
@@ -92,9 +102,64 @@ export class EventListComponent implements OnInit {
     });
   }
 
+  // New method to filter events that are not already booked
+  updateFilteredEvents(): void {
+    this.filteredEvents = this.events.filter(event =>
+      event.eventId && !this.hasBooked[event.eventId]
+    );
+  }
+
+  updateHasBooked(): void {
+    this.events.forEach(event => {
+      if (event.eventId) {
+        const ticket = this.userTickets.find(
+          t => t.event && t.event.eventId === event.eventId
+        );
+        this.hasBooked[event.eventId] = !!ticket;
+        if (ticket) {
+          this.generateQrCode(event, ticket);
+        }
+      }
+    });
+    // Update filtered events whenever booking status changes
+    this.updateFilteredEvents();
+  }
+
   toggleEventDetails(eventId?: number): void {
     if (eventId !== undefined) {
       this.expandedEvents[eventId] = !this.expandedEvents[eventId];
+    }
+  }
+
+  generateQrCode(event: Event, ticket: Ticket): void {
+    if (!event.eventId || !this.currentUser?.userId) return;
+
+    this.userService.getUserById(this.currentUser.userId).subscribe({
+      next: (userDetails: User) => {
+        const qrContent = `Event: ${event.titre}\n` +
+          `Student: ${userDetails.firstName || 'N/A'} ${userDetails.lastName || 'N/A'}\n` +
+          `Email: ${userDetails.email || 'N/A'}\n` +
+          `Booking Status: Confirmed\n` +
+          `Event Date: ${event.date}\n` +
+          `Location: ${event.lieu}`;
+
+        QRCode.toDataURL(qrContent, { width: 200, margin: 1 }, (err, url) => {
+          if (err) {
+            console.error('Error generating QR code:', err);
+            return;
+          }
+          this.qrCodes[event.eventId!] = url;
+        });
+      },
+      error: (err: any) => {
+        this.snackBar.open('Failed to fetch user details for QR code: ' + err.message, 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  toggleQrCode(eventId?: number): void {
+    if (eventId !== undefined) {
+      this.showQrCode[eventId] = !this.showQrCode[eventId];
     }
   }
 
@@ -104,13 +169,12 @@ export class EventListComponent implements OnInit {
       return;
     }
     this.ticketService.bookTicket(eventId, this.userId).subscribe({
-      next: () => {
-        this.snackBar.open('Ticket booked successfully!', 'Close', { duration: 3000 });
+      next: (createdTicket: Ticket) => {
+        this.snackBar.open('Registration successful!', 'Close', { duration: 3000 });
         this.loadUserTickets();
-        this.loadEvents();
       },
       error: (err: any) => {
-        this.snackBar.open('Failed to book ticket: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
+        this.snackBar.open('Failed to register: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
       }
     });
   }
@@ -130,19 +194,27 @@ export class EventListComponent implements OnInit {
       return;
     }
 
-    if (confirm('Are you sure you want to cancel this booking?')) {
+    if (confirm('Are you sure you want to cancel this registration?')) {
       this.ticketService.cancelTicket(ticket.ticketId!, this.userId!).subscribe({
         next: () => {
-          this.snackBar.open('Booking canceled successfully!', 'Close', { duration: 3000 });
+          this.snackBar.open('Registration canceled successfully!', 'Close', { duration: 3000 });
           this.loadUserTickets();
           this.loadEvents();
+          this.hasBooked[eventId] = false;
+          this.qrCodes[eventId] = null;
+          this.showQrCode[eventId] = false;
+          // Update filtered events after cancellation
+          this.updateFilteredEvents();
         },
         error: (err: any) => {
-          this.snackBar.open('Failed to cancel booking: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
+          this.snackBar.open('Failed to cancel registration: ' + (err.error?.message || err.message), 'Close', { duration: 3000 });
         }
       });
     }
   }
 
-
+  descriptionExceedsLimit(description: string): boolean {
+    const approxMaxCharsForThreeLines = 120;
+    return description.length > approxMaxCharsForThreeLines;
+  }
 }

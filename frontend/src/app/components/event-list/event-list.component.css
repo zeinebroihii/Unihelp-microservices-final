@@ -1,124 +1,371 @@
+/* Global container styling */
 .page-wrapper {
-  margin-top: 100px; /* Adjust this value to match the exact height of your header */
-  background-color: #f5f9ff; /* Light blue background for the event page */
-  min-height: calc(100vh - 100px); /* Ensure the page takes up the full viewport height minus the header */
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 70px 0;
+  font-family: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
 .container {
-  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 28px;
 }
 
-h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #1a3b6e;
+  margin-bottom: 32px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
 }
 
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(to right, #3b5998, #4b6cb7);
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+}
+
+/* Event grid layout */
 .event-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Three columns like in the image */
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 28px;
+  margin-bottom: 48px;
 }
 
+/* Card styling */
 .event-card {
-  background-color: #fff;
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  transition: transform 0.2s;
-  padding: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background-color: #ffffff;
+  height: 100%;
+  border: 1px solid #edf2f7;
 }
 
 .event-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
 }
 
-mat-card-header {
-  padding-bottom: 8px;
-}
-
-mat-card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.event-description {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.toggle-details {
-  font-size: 14px;
-  color: #6c63ff; /* Purple color to match the "Read More" in the image */
-  cursor: pointer;
-  display: block;
-  margin-bottom: 12px;
-  transition: color 0.2s;
-}
-
-.toggle-details:hover {
-  color: #514aff; /* Slightly darker purple on hover */
-}
-
-.event-details {
-  margin-bottom: 12px;
-}
-
-.event-date-location {
+/* Card header */
+.card-header {
   display: flex;
-  flex-direction: column; /* Stack date and location vertically */
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 12px;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.title-section {
+  flex: 1;
+}
+
+.event-title {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #1e3a8a;
+  margin: 0 0 6px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .event-date {
-  font-size: 14px;
+  color: #64748b;
+  font-size: 0.9rem;
+  display: block;
+  margin-top: 4px;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 4px; /* Small gap between date and location */
 }
 
-.event-location {
-  font-size: 14px;
-  color: #666;
+/* QR button */
+.qr-button {
+  margin: -8px -8px 0 0;
+}
+
+.qr-button mat-icon {
+  color: #64748b;
+}
+
+.qr-button[color="primary"] mat-icon {
+  color: #3b5998;
+}
+
+/* Card content */
+mat-card-content {
+  padding: 18px 24px;
+  flex: 1;
+}
+
+/* Event details styling */
+.event-details {
+  margin: 20px 0;
+  padding: 18px 20px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-item {
   display: flex;
   align-items: center;
+  margin-bottom: 12px;
 }
 
-.location-icon {
-  color: #ff6f61; /* Orange color for the location pin, like in the image */
-  font-size: 16px;
-  margin-right: 4px;
+.detail-item:last-child {
+  margin-bottom: 0;
 }
 
-mat-card-actions {
+.detail-icon {
+  color: #3b5998;
+  margin-right: 14px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.detail-item span {
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Description styling */
+.event-description {
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.65;
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.25s ease;
+}
+
+.event-description.expanded {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.toggle-details {
+  color: #3b5998;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-block;
+  margin-bottom: 16px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.toggle-details:hover {
+  color: #1e40af;
+  text-decoration: underline;
+}
+
+/* QR code container */
+.qr-code-container {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  margin-top: 20px;
+}
+
+.qr-code-container img {
+  width: 180px;
+  height: 180px;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 12px;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 18px 24px 24px;
+  margin-top: auto;
+  justify-content: flex-end;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 0;
+  border-radius: 8px;
+  font-weight: 500;
+  justify-content: center;
+  height: 42px;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  min-width: 150px;
+  transition: all 0.2s ease;
 }
 
-button[mat-raised-button] {
-  border-radius: 20px; /* Rounded buttons */
-  padding: 0 16px;
-  font-size: 14px;
+.register-button {
+  background: linear-gradient(to right, #3b5998, #4b6cb7);
+  box-shadow: 0 2px 4px rgba(59, 89, 152, 0.2);
 }
 
-button[color="primary"] {
-  background-color: #6c63ff; /* Base purple for "Book Ticket" and "View Bookings" */
-  color: #fff;
+.register-button:hover:not([disabled]) {
+  background: linear-gradient(to right, #314b81, #3f5ba0);
+  box-shadow: 0 4px 8px rgba(59, 89, 152, 0.3);
 }
 
-button[color="warn"] {
-  background-color: #8a82ff; /* Lighter purple for "Cancel Ticket" and "Delete" */
-  color: #fff;
+.register-button[disabled] {
+  background: #cbd5e1;
+  color: #ffffff;
+  box-shadow: none;
 }
 
-button[color="accent"] {
-  background-color: #514aff; /* Darker purple for "Edit" */
-  color: #fff;
+.cancel-button {
+  color: #b91c1c;
+  border: 1px solid rgba(185, 28, 28, 0.2);
+  background-color: transparent;
+}
+
+.cancel-button:hover:not([disabled]) {
+  background-color: rgba(239, 68, 68, 0.04);
+  border-color: rgba(185, 28, 28, 0.3);
+}
+
+/* Empty state */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 24px;
+  color: #64748b;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+}
+
+.empty-icon {
+  font-size: 56px;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 20px;
+  color: #94a3b8;
+}
+
+.empty-state p {
+  font-size: 1.25rem;
+  margin: 0;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.event-card {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Responsive styling */
+@media (max-width: 868px) {
+  .page-wrapper {
+    padding: 50px 0;
+  }
+
+  .event-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 22px;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    margin-bottom: 28px;
+  }
+}
+
+@media (max-width: 580px) {
+  .container {
+    padding: 0 18px;
+  }
+
+  .event-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .card-header {
+    padding: 20px 20px 10px;
+  }
+
+  mat-card-content {
+    padding: 16px 20px;
+  }
+
+  .action-buttons {
+    padding: 16px 20px 20px;
+  }
+
+  .qr-code-container img {
+    width: 160px;
+    height: 160px;
+  }
+
+  .action-button {
+    min-width: 130px;
+    height: 40px;
+  }
+
+  .event-title {
+    font-size: 1.2rem;
+  }
+
+  .event-details {
+    padding: 16px;
+  }
 }

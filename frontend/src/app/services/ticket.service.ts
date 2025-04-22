@@ -23,8 +23,4 @@ export class TicketService {
   cancelTicket(ticketId: number, userId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/cancel/${ticketId}?userId=${userId}`);
   }
-
-  getTicketsByEvent(eventId: number): Observable<Ticket[]> {
-    return this.http.get<Ticket[]>(`${this.apiUrl}/event/${eventId}`);
-  }
 }
