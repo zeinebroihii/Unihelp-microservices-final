@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './layout';
+import {CourseDetailComponent} from "./views/course-detail/course-detail.component";
 
 export const routes: Routes = [
   {
@@ -22,6 +23,17 @@ export const routes: Routes = [
         path: 'theme',
         loadChildren: () => import('./views/theme/routes').then((m) => m.routes)
       },
+      {
+        path: 'courses',
+        loadChildren: () => import('./views/course/routes').then((m) => m.routes)
+      },
+      {
+        path: 'add-course',
+        loadChildren: () => import('./views/add-course/routes').then((m) => m.routes)
+      },
+      { path: 'courses/:id', component: CourseDetailComponent },
+
+
       {
         path: 'base',
         loadChildren: () => import('./views/base/routes').then((m) => m.routes)

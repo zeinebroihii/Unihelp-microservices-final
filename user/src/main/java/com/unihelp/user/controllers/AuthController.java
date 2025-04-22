@@ -92,22 +92,18 @@ public class AuthController {
         return ResponseEntity.ok("User logged out successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(user);
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/{id}/ban")
     public ResponseEntity<String> banUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -120,7 +116,6 @@ public class AuthController {
         return ResponseEntity.ok("User banned successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/{id}/unban")
     public ResponseEntity<String> unbanUser(@PathVariable Long id) {
         User user = userRepository.findById(id)
@@ -133,7 +128,6 @@ public class AuthController {
         return ResponseEntity.ok("User unbanned successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/users/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
         User user = userRepository.findById(id)
@@ -149,7 +143,6 @@ public class AuthController {
         return ResponseEntity.ok("User details updated successfully.");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         User user = userRepository.findById(id)

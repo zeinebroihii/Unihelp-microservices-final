@@ -17,6 +17,7 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="user" />
       </profile>
@@ -31,6 +32,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="events" target="17" />
       <module name="unihelp" target="17" />
     </bytecodeTargetLevel>
   </component>
@@ -39,6 +41,7 @@
       <module name="config-server" options="-parameters" />
       <module name="cours" options="-parameters" />
       <module name="discovery" options="-parameters" />
+      <module name="events" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="unihelp" options="-parameters" />
       <module name="user" options="-parameters" />

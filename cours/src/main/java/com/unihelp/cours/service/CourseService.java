@@ -18,15 +18,19 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRestClient userRestClient;
 
-
     public Course createCourse(Course course) {
-        User instructor = userRestClient.findUserById(course.getUserId());
-
-        if (instructor.getRole() != Role.STUDENT) {
-            throw new IllegalArgumentException("Only instructors can create courses");
+        if (course.getUserId() == null) {
+            throw new IllegalArgumentException("User ID is required to create a course");
         }
-        course.setUser(instructor);
+        User instructor = userRestClient.findUserById(course.getUserId());
+        if (instructor == null) {
+            throw new IllegalArgumentException("User not found with ID: " + course.getUserId());
+        }
+        if (instructor.getRole() != Role.ADMIN && instructor.getRole() != Role.MENTOR) {
+            throw new IllegalArgumentException("Only instructors with the role 'ADMIN' or 'MENTOR' can create courses");
+        }
 
+        course.setUser(instructor);
         return courseRepository.save(course);
     }
 
@@ -43,6 +47,15 @@ public class CourseService {
 
     public List<Course> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
+        courses.forEach(course -> {
+            User instructor = userRestClient.findUserById(course.getUserId());
+            course.setUser(instructor);
+        });
+        return courses;
+    }
+
+    public List<Course> getCoursesByInstructor(Long UserId) {
+        List<Course> courses = courseRepository.findByUserId(UserId);
         courses.forEach(course -> {
             User instructor = userRestClient.findUserById(course.getUserId());
             course.setUser(instructor);

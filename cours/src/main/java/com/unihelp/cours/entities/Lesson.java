@@ -15,10 +15,17 @@ public class Lesson {
     private Long id;
 
     private String title;
-    private String content;
+    private String description;
+    private String contentUrl; // Matches TypeScript
+    private String contentType; // 'pdf' or 'video', matches TypeScript
+    private String thumbnailUrl; // Matches TypeScript
 
     @ManyToOne
     @JoinColumn(name = "module_id", nullable = false)
     @JsonBackReference
     private Module module;
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

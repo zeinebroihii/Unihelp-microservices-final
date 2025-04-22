@@ -28,10 +28,13 @@ public class Course {
     private Category category;
     private String level;
     private double price;
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String thumbnailUrl;
+    private Long userId;
+
     @Transient
     private User user;
-    private Long userId;
 
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
