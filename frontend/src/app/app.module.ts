@@ -8,9 +8,15 @@ import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { CoursesComponent } from './courses/courses.component';
+import { CancelComponent } from './cancel/cancel.component';
+import { ChatbotComponent } from './chatbot/chatbot.component';
+import { CourseDetailsComponent } from './course-details/course-details.component';
+import { PanierComponent } from './panier/panier.component';
+import { QuizComponent } from './quiz/quiz.component';
+import { SuccessComponent } from './success/success.component';
 
 @NgModule({
   declarations: [
@@ -20,13 +26,20 @@ import { CoursesComponent } from './courses/courses.component';
     HomeComponent,
     LoginComponent,
     NotFoundComponent,
-    CoursesComponent
+    CoursesComponent,
+    CancelComponent,
+    ChatbotComponent,
+    CourseDetailsComponent,
+    PanierComponent,
+    QuizComponent,
+    SuccessComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
