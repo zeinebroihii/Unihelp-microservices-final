@@ -109,9 +109,6 @@ services:
       mysql-cours:
         condition: service_healthy
 
-    volumes:
-      - uploads_data:/src/main/resources/uploads
-
 
   gateway:
     build: ./gateway
@@ -175,5 +172,4 @@ volumes:
   mysql_data_user:
   mysql_data_cours:
   mysql_data_events:
-  uploads_data:
   jenkins_data:
