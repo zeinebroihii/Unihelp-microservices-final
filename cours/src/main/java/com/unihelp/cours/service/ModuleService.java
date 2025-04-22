@@ -1,7 +1,5 @@
 package com.unihelp.cours.service;
 
-import com.unihelp.cours.entities.Course;
-import com.unihelp.cours.entities.Module;
 import com.unihelp.cours.exception.CourseNotFoundException;
 import com.unihelp.cours.exception.ModuleNotFoundException;
 import com.unihelp.cours.repository.CourseRepository;

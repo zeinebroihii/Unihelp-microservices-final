@@ -4,8 +4,6 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import com.unihelp.cours.entities.Course;
-import com.unihelp.cours.entities.Lesson;
 import com.unihelp.cours.service.CourseService;
 import com.unihelp.cours.service.VectorStore;
 import lombok.RequiredArgsConstructor;

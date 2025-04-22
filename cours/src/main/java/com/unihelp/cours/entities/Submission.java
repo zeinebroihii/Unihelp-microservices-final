@@ -1,6 +1,5 @@
 package com.unihelp.cours.entities;
 
-import com.unihelp.cours.model.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;

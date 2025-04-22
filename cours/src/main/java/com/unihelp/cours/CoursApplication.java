@@ -3,7 +3,6 @@ package com.unihelp.cours;
 import com.unihelp.cours.clients.UserRestClient;
 import com.unihelp.cours.enums.Category;
 
-import com.unihelp.cours.entities.Course;
 import com.unihelp.cours.model.User;
 import com.unihelp.cours.repository.CourseRepository;
 import org.springframework.boot.CommandLineRunner;

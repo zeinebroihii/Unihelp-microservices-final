@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.unihelp.cours.enums.Category;
 import com.unihelp.cours.model.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +18,6 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 
 public class Course {
@@ -27,7 +29,7 @@ public class Course {
     @Enumerated(EnumType.STRING)
     private Category category;
     private String level;
-    private double price;
+    private Double price;
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String thumbnailUrl;
@@ -40,8 +42,6 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Module> modules = new ArrayList<>();
-
-
 
 
 
@@ -60,7 +60,24 @@ public class Course {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+    public double getPrice() {
+        return price != null ? price : 0.0;
+    }
+//jdida lel enrollment relation
 
+    @OneToMany(mappedBy = "course")
+    @JsonIgnore // Exclude enrollments from serialization
+    private List<Enrollment> enrollments;
 
+    // Constructor for ID
+    public Course(Long id) {
+        this.id = id;
+    }
+
+    // Default constructor
+    public Course() {}
+    public double getPrice(Course course) {
+        return price != null ? price : 0.0;
+    }
 }
 

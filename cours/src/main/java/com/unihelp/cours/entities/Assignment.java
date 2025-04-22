@@ -1,7 +1,7 @@
 package com.unihelp.cours.entities;
 
 import jakarta.persistence.*;
-import com.unihelp.cours.entities.Assignment;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

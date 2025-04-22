@@ -1,7 +1,6 @@
 package com.unihelp.cours.service;
 
 import com.unihelp.cours.clients.UserRestClient;
-import com.unihelp.cours.entities.Course;
 import com.unihelp.cours.exception.CourseNotFoundException;
 import com.unihelp.cours.model.Role;
 import com.unihelp.cours.model.User;

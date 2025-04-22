@@ -1,7 +1,5 @@
 package com.unihelp.cours.controller;
 
-import com.unihelp.cours.entities.Lesson;
-import com.unihelp.cours.entities.Module;
 import com.unihelp.cours.repository.LessonRepository;
 import com.unihelp.cours.repository.ModuleRepository;
 import com.unihelp.cours.service.LessonService;
