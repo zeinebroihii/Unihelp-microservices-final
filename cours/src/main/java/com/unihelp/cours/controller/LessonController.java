@@ -2,7 +2,6 @@ package com.unihelp.cours.controller;
 
 import com.unihelp.cours.repository.LessonRepository;
 import com.unihelp.cours.repository.ModuleRepository;
-import com.unihelp.cours.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

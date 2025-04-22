@@ -1,5 +1,7 @@
 package com.unihelp.cours.service;
 
+import com.unihelp.cours.entities.Course;
+import com.unihelp.cours.entities.Module;
 import com.unihelp.cours.exception.CourseNotFoundException;
 import com.unihelp.cours.exception.ModuleNotFoundException;
 import com.unihelp.cours.repository.CourseRepository;
@@ -12,10 +14,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ModuleService {
-
     private final CourseRepository courseRepository;
     private final ModuleRepository moduleRepository;
-
     public Module addModuleToCourse(Long courseId, Module module) {
         // Check if course exists
         Course course = courseRepository.findById(courseId)
