@@ -3,6 +3,8 @@ import { BlogService, Blog } from '../../../services/blog.service';
 import { CommentService, Comment } from '../../../services/comment.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface PopularPost {
   title: string;
@@ -17,20 +19,14 @@ interface PopularPost {
 })
 export class BlogDetailsComponent implements OnInit {
   blog: Blog | null = null;
+  blogs: Blog[] = [];
+  filteredBlogs: Blog[] = [];
+  latestBlogs: Blog[] = [];
   comments: Comment[] = [];
   errorMessage: string | null = null;
   isEditing: boolean = false;
   editingCommentId: number | null = null;
   staticUserId: number = 1;
-  categories: string[] = [
-    'eCommerce', 'Microsoft Technologies', 'Creative UX', 'Wordpress',
-    'Angular JS', 'Enterprise Mobility', 'Website Design', 'HTML5',
-    'Infographics', 'Wordpress Development'
-  ];
-  popularPosts: PopularPost[] = [
-    { title: 'Apple Introduces Search Ads Basic', date: 'Jun 22, 2018', imageUrl: 'https://www.bootdey.com/image/280x280/87CEFA/000000' },
-    { title: 'New rules, more cars, more races', date: 'Jun 8, 2018', imageUrl: 'https://www.bootdey.com/image/280x280/87CEFA/000000' }
-  ];
   instagramPosts: string[] = Array(9).fill('https://www.bootdey.com/image/100x100/87CEFA/000000');
 
   constructor(
@@ -48,6 +44,24 @@ export class BlogDetailsComponent implements OnInit {
         this.loadComments(+id);
       }
     });
+    this.blogService.getAllBlogs().subscribe({
+      next: (blogs) => {
+        this.blogs = blogs;
+        this.filteredBlogs = blogs;
+        this.latestBlogs = this.getLatestBlogs(blogs);
+        this.errorMessage = null;
+      },
+      error: (error) => {
+        this.errorMessage = error.message;
+      }
+    });
+  }
+
+  private getLatestBlogs(blogs: Blog[]): Blog[] {
+    return blogs
+      .filter(blog => blog.idBlog != null)
+      .sort((a, b) => b.idBlog! - a.idBlog!)
+      .slice(0, 3);
   }
 
   loadBlog(id: number): void {
@@ -164,5 +178,117 @@ export class BlogDetailsComponent implements OnInit {
 
   isCommentEditable(comment: Comment): boolean {
     return comment.userId === this.staticUserId;
+  }
+
+  downloadAsPDF(): void {
+    if (!this.blog) {
+      this.errorMessage = 'Blog not loaded. Please try again.';
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 10;
+
+    // Header: Username (Top-Left) and Date/Time (Top-Right)
+    const now = new Date();
+    const dateTime = now.toLocaleString();
+    const username = this.blog.user?.firstName || 'Anonymous';
+
+    doc.setFontSize(12);
+    doc.setFont('times', 'italic');
+    doc.setTextColor(50, 50, 50); // Dark gray for elegance
+    doc.text(username, margin, 15); // Top-left
+
+    doc.setFontSize(10);
+    doc.setFont('times', 'normal');
+    doc.text(`Generated on: ${dateTime}`, pageWidth - margin, 15, { align: 'right' }); // Top-right
+
+    // Title: Centered with a larger, bold font
+    doc.setFontSize(24);
+    doc.setFont('times', 'bold');
+    doc.setTextColor(0, 0, 0); // Black for title
+    const titleWidth = doc.getTextWidth(this.blog.title);
+    doc.text(this.blog.title, (pageWidth - titleWidth) / 2, 30); // Centered
+
+    let y = 40;
+
+    // Image: Full width with proportional height
+    if (this.blog.imagepath) {
+      try {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = this.getImageUrl(this.blog.imagepath);
+        img.onload = () => {
+          const imgWidth = pageWidth - 2 * margin;
+          const imgHeight = (img.height * imgWidth) / img.width;
+          doc.addImage(img, 'JPEG', margin, y, imgWidth, imgHeight);
+          y += imgHeight + 10;
+
+          // Content: Styled with Times font, justified, and better spacing
+          doc.setFontSize(12);
+          doc.setFont('times', 'normal');
+          doc.setTextColor(40, 40, 40);
+          doc.setLineHeightFactor(1.5); // Better line spacing
+          doc.text(this.blog!.content, margin, y, { maxWidth: pageWidth - 2 * margin, align: 'justify' });
+
+          // Footer: Unihelp@support.com in bottom-right
+          doc.setFontSize(10);
+          doc.setFont('times', 'italic');
+          doc.setTextColor(100, 100, 100); // Light gray for footer
+          doc.text('Unihelp@support.com', pageWidth - margin, pageHeight - margin, { align: 'right' });
+
+          doc.save(`${this.blog!.title}.pdf`);
+        };
+        img.onerror = () => {
+          // Fallback if image fails to load
+          doc.setFontSize(12);
+          doc.setFont('times', 'normal');
+          doc.setTextColor(40, 40, 40);
+          doc.setLineHeightFactor(1.5);
+          doc.text(this.blog!.content, margin, y, { maxWidth: pageWidth - 2 * margin, align: 'justify' });
+
+          // Footer
+          doc.setFontSize(10);
+          doc.setFont('times', 'italic');
+          doc.setTextColor(100, 100, 100);
+          doc.text('Unihelp@support.com', pageWidth - margin, pageHeight - margin, { align: 'right' });
+
+          doc.save(`${this.blog!.title}.pdf`);
+        };
+      } catch (error) {
+        console.error('Error loading image:', error);
+        // Proceed without image
+        doc.setFontSize(12);
+        doc.setFont('times', 'normal');
+        doc.setTextColor(40, 40, 40);
+        doc.setLineHeightFactor(1.5);
+        doc.text(this.blog.content, margin, y, { maxWidth: pageWidth - 2 * margin, align: 'justify' });
+
+        // Footer
+        doc.setFontSize(10);
+        doc.setFont('times', 'italic');
+        doc.setTextColor(100, 100, 100);
+        doc.text('Unihelp@support.com', pageWidth - margin, pageHeight - margin, { align: 'right' });
+
+        doc.save(`${this.blog.title}.pdf`);
+      }
+    } else {
+      // Add Content without image
+      doc.setFontSize(12);
+      doc.setFont('times', 'normal');
+      doc.setTextColor(40, 40, 40);
+      doc.setLineHeightFactor(1.5);
+      doc.text(this.blog.content, margin, y, { maxWidth: pageWidth - 2 * margin, align: 'justify' });
+
+      // Footer
+      doc.setFontSize(10);
+      doc.setFont('times', 'italic');
+      doc.setTextColor(100, 100, 100);
+      doc.text('support@unihelp.com', pageWidth - margin, pageHeight - margin, { align: 'right' });
+
+      doc.save(`${this.blog.title}.pdf`);
+    }
   }
 }

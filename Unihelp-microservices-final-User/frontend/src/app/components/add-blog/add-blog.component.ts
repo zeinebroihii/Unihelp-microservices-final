@@ -34,6 +34,17 @@ export class AddBlogComponent implements OnInit {
   staticUserId: number = 1;
   isImageVerified: boolean = false; // Track image verification status
 
+  // List of bad words for detection (random selection for testing)
+  private badWords: string[] = [
+    'damn',
+    'hell',
+    'jerk',
+    'stupid',
+    'idiot',
+    'fool',
+    'rude'
+  ];
+
   // Sightengine API credentials (ideally from environment or config service)
   private sightengineApiUser = '128746998'; // Replace with your API user
   private sightengineApiSecret = 'ZJ5XbrmXWzdF99cinMPvoVuh3DuuXiYF'; // Replace with your API secret
@@ -205,6 +216,17 @@ export class AddBlogComponent implements OnInit {
     return this.blogForm.get('image');
   }
 
+  // Method to check for bad words in a given text
+  private containsBadWords(text: string): string | null {
+    const lowerCaseText = text.toLowerCase();
+    for (const badWord of this.badWords) {
+      if (lowerCaseText.includes(badWord)) {
+        return badWord; // Return the first bad word found
+      }
+    }
+    return null; // No bad words found
+  }
+
   onSubmit(): void {
     console.log('onSubmit called');
     console.log('Form valid:', this.blogForm.valid);
@@ -214,6 +236,16 @@ export class AddBlogComponent implements OnInit {
       this.blogForm.markAllAsTouched();
       this.errorMessage = 'Please fill out all required fields correctly.';
       console.log('Form errors:', this.blogForm.errors);
+      return;
+    }
+
+    // Check for bad words in title and content
+    const titleBadWord = this.containsBadWords(this.blogForm.value.title);
+    const contentBadWord = this.containsBadWords(this.blogForm.value.content);
+
+    if (titleBadWord || contentBadWord) {
+      const badWord = titleBadWord || contentBadWord;
+      this.errorMessage = `Inappropriate language detected: "${badWord}". Please remove or replace this word.`;
       return;
     }
 

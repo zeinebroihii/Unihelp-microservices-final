@@ -1,6 +1,6 @@
 <app-header></app-header>
 
-<br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br>
 
 <div class="container p-4">
   <div class="row p-4">
@@ -41,11 +41,13 @@
           <p class="display-30">{{ blog.content | slice:0:47 }}...</p>
           <div class="meta meta-style2">
             <ul>
-              <li><i class="fas fa-user"></i> {{ blog.user?.firstName || 'User' }}</li>
-              <li><i class="fas fa-comments"></i> {{ blog.comments?.length }}</li>
+              <li><i class="fa fa-user"></i> {{ blog.user?.firstName || 'User' }}</li>
+              <li><i class="fa fa-comments"></i> {{ blog.comments?.length }}</li>
               <div *ngIf="isBlogDeletable(blog.userId)">
-                <li><a (click)="DeleteBlog(blog.idBlog)"><i class="fas fa-trash"></i> Delete</a></li>
-                <li><a [routerLink]="['/editblog', blog.idBlog]"><i class="fas fa-edit"></i> Edit</a></li>
+                <li><a (click)="DeleteBlog(blog.idBlog)"><i class="fa fa-trash"></i> Delete</a></li>
+              </div>
+              <div *ngIf="isBlogDeletable(blog.userId)">
+                <li><a [routerLink]="['/editblog', blog.idBlog]"><i class="fa fa-edit"></i> Edit</a></li>
               </div>
             </ul>
           </div>

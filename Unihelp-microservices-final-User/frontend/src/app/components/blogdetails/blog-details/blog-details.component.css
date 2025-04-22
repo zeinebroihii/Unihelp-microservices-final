@@ -216,3 +216,11 @@
       margin-bottom: 30px;
     }
   }
+
+  .paragraph {
+    overflow-y: scroll;
+    font: 100%/1.5 sans-serif;
+    word-wrap: break-word;
+    margin: 0 auto;
+    padding-bottom: 40px;
+  }
