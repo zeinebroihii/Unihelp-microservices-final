@@ -1,4 +1,12 @@
 <app-header></app-header>
+
+<!-- Reset Password Modal - Moved outside the login container for proper z-index handling -->
+<app-reset-password-modal
+  *ngIf="isModalOpen"
+  [token]="resetToken"
+  (close)="closeResetModal()"
+></app-reset-password-modal>
+
 <div class="login-container">
   <!-- Left Section (Form) -->
   <div class="form-section">
@@ -8,13 +16,6 @@
     </div>
     <p class="subheading">Welcome back! Please enter your details.</p>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-
-    <!-- Reset Password Modal -->
-    <app-reset-password-modal
-      *ngIf="isModalOpen"
-      [token]="resetToken"
-      (close)="closeResetModal()"
-    ></app-reset-password-modal>
 
       <div class="form-group">
         <label for="email">Email</label>
@@ -73,14 +74,12 @@
       <div class="social-login">
         <p>Or Continue With</p>
         <div class="social-buttons">
-          <button type="button" class="social-btn google">
-            <img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="Google" />
-            Google
-          </button>
-          <button type="button" class="social-btn facebook">
-            <img src="https://img.icons8.com/color/24/000000/facebook-new.png" alt="Facebook" />
-            Facebook
-          </button>
+          <!-- FedCM Google Sign-in Button Container -->
+          <div id="google-login-button" class="google-button-container"></div>
+          <!-- Removed Facebook button as it's not implemented yet -->
+        </div>
+        <div class="google-info">
+          <p><i class="fa fa-info-circle"></i> New to UniHelp? You can sign up with Google too!</p>
         </div>
       </div>
 
@@ -90,5 +89,20 @@
     </form>
   </div>
 
-
+  <!-- Right Section (Photo Slider) -->
+  <div class="photo-section">
+    <div class="photo-slider">
+      <img src="assets/img/students1.jpg" alt="Students studying" />
+      <img src="assets/img/students2.jpg" alt="University campus" />
+      <img src="assets/img/students3.jpg" alt="Group project" />
+      <img src="assets/img/students4.jpg" alt="Graduation" />
+      <!-- Duplicate images for seamless looping -->
+      <img src="assets/img/students1.jpg" alt="Students studying" />
+      <img src="assets/img/students2.jpg" alt="University campus" />
+    </div>
+    <div class="photo-overlay">
+      <h2>Welcome to UniHelp</h2>
+      <p>Your university journey starts here. Connect with mentors, find resources, and achieve your academic goals.</p>
+    </div>
+  </div>
 </div>

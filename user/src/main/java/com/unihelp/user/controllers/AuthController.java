@@ -28,8 +28,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import com.unihelp.user.services.GoogleAuthService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,6 +47,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final GoogleAuthService googleAuthService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(
@@ -259,7 +265,92 @@ public class AuthController {
         userRepository.save(user);
 
         tokenRepository.delete(resetToken);
-
         return ResponseEntity.ok("Password successfully reset!");
+    }
+    
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request) {
+        System.out.println("AuthController: Received Google login request");
+        
+        if (request == null || request.getToken() == null || request.getToken().isEmpty()) {
+            System.err.println("AuthController: Google login request contains null or empty token");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Google token is required");
+        }
+        
+        try {
+            System.out.println("AuthController: Processing Google login with token length: " + request.getToken().length());
+            Map<String, Object> authResult = googleAuthService.authenticateGoogleUser(request.getToken());
+            
+            // Get the JWT token
+            String token = (String) authResult.get("token");
+            if (token == null || token.isEmpty()) {
+                System.err.println("AuthController: No JWT token generated from Google authentication");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate authentication token");
+            }
+            
+            // Get user details from token
+            String email = jwtUtils.extractUsername(token);
+            System.out.println("AuthController: Extracted email from token: " + email);
+            
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        System.err.println("AuthController: User not found for email: " + email);
+                        return new RuntimeException("User not found");
+                    });
+            
+            // Create response object
+            LoginResponse response = new LoginResponse();
+            response.setToken(token);
+            response.setType("Bearer");
+            response.setId(user.getId());
+            response.setEmail(user.getEmail());
+            response.setRole(user.getRole().name());
+            
+            // Add profile completion status
+            boolean profileCompleted = (boolean) authResult.get("profileCompleted");
+            response.setProfileCompleted(profileCompleted);
+            
+            // Add isNewUser flag if present
+            if (authResult.containsKey("isNewUser")) {
+                response.setNewUser((boolean) authResult.get("isNewUser"));
+            }
+            
+            System.out.println("AuthController: Google login successful for user: " + email);
+            return ResponseEntity.ok(response);
+        } catch (GeneralSecurityException | IOException e) {
+            System.err.println("AuthController: Security/IO exception in Google login: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Google token: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("AuthController: Unexpected exception in Google login: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during Google authentication: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/complete-profile")
+    public ResponseEntity<?> completeProfile(
+            @RequestParam("userId") Long userId,
+            @RequestParam("bio") String bio,
+            @RequestParam("skills") String skills,
+            @RequestParam("role") UserRole role,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        try {
+            User updatedUser = googleAuthService.completeUserProfile(userId, bio, skills, role, profileImage);
+            
+            // Create response object
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Profile completed successfully");
+            response.put("userId", updatedUser.getId());
+            response.put("email", updatedUser.getEmail());
+            response.put("role", updatedUser.getRole().name());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error completing profile: " + e.getMessage());
+        }
     }
 }

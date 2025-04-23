@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+declare const google: any;
 
 interface LoginRequest {
   email: string;
@@ -14,6 +15,8 @@ interface LoginResponse {
   id: number;
   email: string;
   role: string;
+  profileCompleted: boolean;
+  newUser: boolean;
 }
 
 interface EmailRequest {
@@ -127,11 +130,56 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
-  resetPasswordWithToken(token: string, newPassword: string): Observable<string> {
+  resetPasswordWithToken(token: string, newPassword: string): Observable<any> {
     const request: ResetPasswordRequest = { token, newPassword };
     return this.http
-      .post<string>(`${this.apiUrl}/reset-password`, request)
+      .post(`${this.apiUrl}/reset-password`, request, { responseType: 'text' })
       .pipe(catchError(this.handleError));
+  }
+  
+  loginWithGoogle(token: string): Observable<LoginResponse> {
+    console.log('AuthService: Sending Google token to backend');
+    return this.http.post<LoginResponse>(`${this.apiUrl}/google-login`, { token }, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      }),
+      withCredentials: true
+    })
+      .pipe(
+        tap((response) => {
+          console.log('AuthService: Received successful response from Google login');
+          if (response.role !== 'ADMIN') {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem(
+              'user',
+              JSON.stringify({
+                id: response.id,
+                email: response.email,
+                role: response.role,
+                profileCompleted: response.profileCompleted,
+                newUser: response.newUser
+              })
+            );
+          }
+        }),
+        catchError((error) => {
+          console.error('AuthService: Error in Google login', error);
+          return this.handleError(error);
+        })
+      );
+  }
+  
+  completeProfile(userId: number, formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/complete-profile`, formData)
+      .pipe(
+        tap((response: any) => {
+          // Update the user in localStorage with completed profile
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.profileCompleted = true;
+          localStorage.setItem('user', JSON.stringify(user));
+        }),
+        catchError(this.handleError)
+      );
   }
 
   getAllUsers(): Observable<User[]> {

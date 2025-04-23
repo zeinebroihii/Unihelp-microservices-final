@@ -31,6 +31,12 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
+    
+    @Column(name = "google_id")
+    private String googleId;
+    
+    @Builder.Default
+    private boolean profileCompleted = false;
 
     @Column(length = 1000)
     private String bio;

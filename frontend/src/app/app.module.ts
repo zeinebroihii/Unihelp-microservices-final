@@ -21,6 +21,7 @@ import {AuthGuard} from "./auth.guard";
 import {AuthService} from "./services/auth.service";
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ResetPasswordModalComponent } from './components/reset-password-modal/reset-password-modal.component';
+import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
 
 
 @NgModule({
@@ -35,6 +36,7 @@ import { ResetPasswordModalComponent } from './components/reset-password-modal/r
     ProfileComponent,
     ResetPasswordComponent,
     ResetPasswordModalComponent,
+    ProfileCompletionComponent,
   ],
   imports: [
     BrowserModule,

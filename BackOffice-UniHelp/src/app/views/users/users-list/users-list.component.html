@@ -103,9 +103,7 @@
             <div class="col">
               <input type="text" class="form-control" [(ngModel)]="editUserData.skills" name="skills" placeholder="Skills" />
             </div>
-            <div class="col">
-              <input type="text" class="form-control" [(ngModel)]="editUserData.profileImage" name="profileImage" placeholder="Profile Image URL" />
-            </div>
+            <!-- Password field intentionally removed for security reasons -->
             <div class="col-auto">
               <button type="submit" class="btn btn-success btn-sm">Save</button>
               <button type="button" class="btn btn-secondary btn-sm ms-2" (click)="onCancelEdit()">Cancel</button>

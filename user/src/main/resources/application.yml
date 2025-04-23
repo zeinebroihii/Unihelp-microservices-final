@@ -17,4 +17,14 @@ spring:
           auth: true
           starttls:
             enable: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 464900684466-96jtnmiv303pv1tfgh9c4010cb0dobvq.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
 

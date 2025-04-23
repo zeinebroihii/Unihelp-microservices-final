@@ -1,22 +1,23 @@
 <app-header></app-header>
 <div class="signup-container">
-  <!-- Left Section (Form) -->
   <div class="form-section">
     <div class="form-header">
       <span class="dot"></span>
-      <h1>Sign Up</h1>
+      <h1>Create an Account</h1>
     </div>
-    <p class="subheading">Create your account to get started!</p>
-    <form
-      [formGroup]="signupForm"
-      (ngSubmit)="onSubmit()"
-      class="signup-form"
-      enctype="multipart/form-data"
-    >
+    <p class="subheading">Join our community and start your journey with us.</p>
+
+    <div class="step-indicator">
+      <div class="step" [ngClass]="{ active: currentStep === 1, completed: currentStep > 1 }">1</div>
+      <div class="step" [ngClass]="{ active: currentStep === 2, completed: currentStep > 2 }">2</div>
+      <div class="step" [ngClass]="{ active: currentStep === 3 }">3</div>
+    </div>
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
       <!-- Step 1: Basic Info -->
       <div *ngIf="currentStep === 1">
         <div class="form-group">
-          <label for="firstName">First Name</label>
+          <label for="firstName">FIRST NAME</label>
           <input
             type="text"
             id="firstName"
@@ -24,10 +25,8 @@
             placeholder="Enter your first name"
             class="form-control"
             required
-            aria-describedby="firstNameError"
           />
           <small
-            id="firstNameError"
             *ngIf="
               signupForm.get('firstName')?.invalid &&
               signupForm.get('firstName')?.touched
@@ -39,7 +38,7 @@
         </div>
 
         <div class="form-group">
-          <label for="lastName">Last Name</label>
+          <label for="lastName">LAST NAME</label>
           <input
             type="text"
             id="lastName"
@@ -47,10 +46,8 @@
             placeholder="Enter your last name"
             class="form-control"
             required
-            aria-describedby="lastNameError"
           />
           <small
-            id="lastNameError"
             *ngIf="
               signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched
             "
@@ -60,13 +57,13 @@
           </small>
         </div>
 
-        <button type="button" class="genric-btn primary" (click)="nextStep()">Next</button>
+        <button type="button" class="btn-primary" (click)="nextStep()">Next</button>
       </div>
 
       <!-- Step 2: Account Info -->
       <div *ngIf="currentStep === 2">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">EMAIL</label>
           <input
             type="email"
             id="email"
@@ -74,10 +71,8 @@
             placeholder="Enter your email"
             class="form-control"
             required
-            aria-describedby="emailError"
           />
           <small
-            id="emailError"
             *ngIf="
               signupForm.get('email')?.invalid && signupForm.get('email')?.touched
             "
@@ -88,7 +83,7 @@
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">PASSWORD</label>
           <div class="password-wrapper">
             <input
               [type]="showPassword ? 'text' : 'password'"
@@ -97,7 +92,6 @@
               placeholder="Enter your password"
               class="form-control"
               required
-              aria-describedby="passwordError"
             />
             <i
               class="eye-icon"
@@ -106,7 +100,6 @@
             ></i>
           </div>
           <small
-            id="passwordError"
             *ngIf="
               signupForm.get('password')?.invalid && signupForm.get('password')?.touched
             "
@@ -116,23 +109,21 @@
           </small>
         </div>
 
-        <button type="button" class="genric-btn primary" (click)="nextStep()">Next</button>
+        <button type="button" class="btn-primary" (click)="nextStep()">Next</button>
       </div>
 
       <!-- Step 3: Additional Info -->
       <div *ngIf="currentStep === 3">
         <div class="form-group">
-          <label for="bio">Bio</label>
+          <label for="bio">BIO</label>
           <textarea
             id="bio"
             formControlName="bio"
             placeholder="Tell us about yourself"
             class="form-control"
             rows="4"
-            aria-describedby="bioError"
           ></textarea>
           <small
-            id="bioError"
             *ngIf="
               signupForm.get('bio')?.invalid && signupForm.get('bio')?.touched
             "
@@ -144,7 +135,7 @@
 
         <div class="form-group">
           <mat-form-field appearance="outline">
-            <mat-label>Skills</mat-label>
+            <mat-label>SKILLS</mat-label>
             <mat-chip-grid #chipGrid aria-label="Skills selection">
               <mat-chip-row
                 *ngFor="let skill of signupForm.get('skillsList')?.value"
@@ -159,11 +150,9 @@
                 [matChipInputFor]="chipGrid"
                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                 (matChipInputTokenEnd)="addSkill($event)"
-                aria-describedby="skillsError"
               />
             </mat-chip-grid>
             <mat-error
-              id="skillsError"
               *ngIf="
                 signupForm.get('skillsList')?.invalid && signupForm.get('skillsList')?.touched
               "
@@ -174,19 +163,17 @@
         </div>
 
         <div class="form-group">
-          <label for="role">Role</label>
+          <label for="role">ROLE</label>
           <select
             id="role"
             formControlName="role"
             class="form-control"
-            aria-describedby="roleError"
           >
             <option value="" disabled selected>Select your role</option>
             <option value="STUDENT">Student</option>
             <option value="MENTOR">Mentor</option>
           </select>
           <small
-            id="roleError"
             *ngIf="
               signupForm.get('role')?.invalid && signupForm.get('role')?.touched
             "
@@ -197,17 +184,15 @@
         </div>
 
         <div class="form-group">
-          <label for="profileImage">Profile Image</label>
+          <label for="profileImage">PROFILE IMAGE</label>
           <input
             type="file"
             id="profileImage"
             (change)="onFileChange($event)"
             class="form-control"
             accept="image/jpeg,image/png"
-            aria-describedby="profileImageError"
           />
           <small
-            id="profileImageError"
             *ngIf="
               signupForm.get('profileImage')?.invalid && signupForm.get('profileImage')?.touched
             "
@@ -217,17 +202,43 @@
           </small>
         </div>
 
-        <button type="submit" class="genric-btn primary">Sign Up</button>
+        <button type="submit" class="btn-primary" [ngClass]="{ loading: isLoading }" [disabled]="signupForm.invalid || isLoading">
+          {{ isLoading ? 'Signing Up...' : 'Sign Up' }}
+        </button>
       </div>
     </form>
+    
+    <div class="social-login">
+      <p>Or Continue With</p>
+      <div class="social-buttons">
+        <!-- FedCM Google Sign-in Button Container -->
+        <div id="google-signup-button" class="google-button-container"></div>
+        <!-- Removed Facebook button as it's not implemented yet -->
+      </div>
+      <div class="google-info">
+        <p><i class="fa fa-info-circle"></i> Skip the form and get started instantly with Google!</p>
+      </div>
+    </div>
+
+    <p class="signup-link text-center mt-3">
+      Already have an account? <a (click)="goToLogin()" class="login-link">Log in</a>
+    </p>
   </div>
 
-  <!-- Right Section (Photo) -->
+  <!-- Right Section (Photo Slider) -->
   <div class="photo-section">
-    <img
-      src="assets/img/signup.png"
-      alt="Students Studying"
-      class="signup-photo"
-    />
+    <div class="photo-slider">
+      <img src="assets/img/students1.jpg" alt="Students studying" />
+      <img src="assets/img/students2.jpg" alt="University campus" />
+      <img src="assets/img/students3.jpg" alt="Group project" />
+      <img src="assets/img/students4.jpg" alt="Graduation" />
+      <!-- Duplicate images for seamless looping -->
+      <img src="assets/img/students1.jpg" alt="Students studying" />
+      <img src="assets/img/students2.jpg" alt="University campus" />
+    </div>
+    <div class="photo-overlay">
+      <h2>Join Our Community</h2>
+      <p>Connect with students and mentors to enhance your learning experience</p>
+    </div>
   </div>
 </div>

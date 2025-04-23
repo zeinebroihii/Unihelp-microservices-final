@@ -7,6 +7,7 @@ import {SignupComponent} from "./signup/signup.component";
 import {ProfileComponent} from "./components/profile/profile.component";
 import {AuthGuard} from "./auth.guard";
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
 
 const routes: Routes = [
   {path:'',component:HomeComponent},
@@ -15,6 +16,7 @@ const routes: Routes = [
   {path:'home', component: HomeComponent},
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'complete-profile', component: ProfileCompletionComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', component: NotFoundComponent } // Wildcard route for 404
 ];
