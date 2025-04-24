@@ -1,11 +1,14 @@
 package com.unihelp.user.entities;
 
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -56,6 +59,14 @@ public class User implements UserDetails {
 
     @Builder.Default
     private boolean isBanned = false;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<UserActivity> activities = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Token> tokens = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

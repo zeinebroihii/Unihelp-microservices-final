@@ -154,13 +154,39 @@ export class UsersListComponent implements OnInit {
 
   onDelete(user: User) {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    // Show loading state
+    const actionBtn = document.getElementById(`delete-btn-${user.id}`);
+    if (actionBtn) {
+      actionBtn.innerHTML = 'Deleting...';
+      actionBtn.setAttribute('disabled', 'true');
+    }
+    
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
         window.alert('User deleted successfully.');
         this.refreshUsers();
       },
       error: (err) => {
-        window.alert(err.message || 'Failed to delete user.');
+        console.error('Error deleting user:', err);
+        
+        // Reset button state
+        if (actionBtn) {
+          actionBtn.innerHTML = 'Delete';
+          actionBtn.removeAttribute('disabled');
+        }
+        
+        // Show more detailed error message
+        let errorMessage = 'Failed to delete user.';
+        if (err.error && typeof err.error === 'string') {
+          errorMessage = err.error;
+        } else if (err.message) {
+          errorMessage = err.message;
+        } else if (err.status === 500) {
+          errorMessage = 'Server error while deleting user. The user may have related records.';
+        }
+        
+        window.alert(errorMessage);
       }
     });
   }

@@ -1,5 +1,7 @@
 package com.unihelp.user.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +21,7 @@ public class UserActivity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
     
     @Column(nullable = false)

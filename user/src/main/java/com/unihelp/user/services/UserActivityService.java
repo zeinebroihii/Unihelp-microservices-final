@@ -30,6 +30,11 @@ public class UserActivityService {
         if (activityDto.getUserId() != null) {
             user = userRepository.findById(activityDto.getUserId()).orElse(null);
         }
+        
+        // Handle case where user ID is provided but user not found
+        if (activityDto.getUserId() != null && user == null) {
+            throw new RuntimeException("User with ID " + activityDto.getUserId() + " not found");
+        }
 
         // Set IP address from request if not provided
         String ipAddress = activityDto.getIpAddress();
@@ -85,28 +90,55 @@ public class UserActivityService {
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
         
-        // Get total logins in last 24 hours
-        LocalDateTime yesterday = LocalDateTime.now().minus(1, ChronoUnit.DAYS);
-        Long recentLogins = userActivityRepository.countLoginsInPeriod(yesterday);
-        stats.put("recentLogins", recentLogins);
-        
-        // Get login distribution by device type
-        List<Object[]> deviceStats = userActivityRepository.countLoginsByDeviceType();
-        Map<String, Long> deviceDistribution = new HashMap<>();
-        deviceStats.forEach(stat -> deviceDistribution.put((String) stat[0], (Long) stat[1]));
-        stats.put("deviceDistribution", deviceDistribution);
-        
-        // Get login distribution by browser
-        List<Object[]> browserStats = userActivityRepository.countLoginsByBrowserName();
-        Map<String, Long> browserDistribution = new HashMap<>();
-        browserStats.forEach(stat -> browserDistribution.put((String) stat[0], (Long) stat[1]));
-        stats.put("browserDistribution", browserDistribution);
-        
-        // Get login distribution by OS
-        List<Object[]> osStats = userActivityRepository.countLoginsByOperatingSystem();
-        Map<String, Long> osDistribution = new HashMap<>();
-        osStats.forEach(stat -> osDistribution.put((String) stat[0], (Long) stat[1]));
-        stats.put("osDistribution", osDistribution);
+        try {
+            // Get total logins in last 24 hours
+            LocalDateTime yesterday = LocalDateTime.now().minus(1, ChronoUnit.DAYS);
+            Long recentLogins = userActivityRepository.countLoginsInPeriod(yesterday);
+            stats.put("recentLogins", recentLogins);
+            
+            // Get login distribution by device type
+            List<Object[]> deviceStats = userActivityRepository.countLoginsByDeviceType();
+            Map<String, Long> deviceDistribution = new HashMap<>();
+            for (Object[] stat : deviceStats) {
+                String deviceType = (String) stat[0];
+                Long count = (Long) stat[1];
+                // Handle null keys
+                if (deviceType == null) deviceType = "Unknown";
+                deviceDistribution.put(deviceType, count);
+            }
+            stats.put("deviceDistribution", deviceDistribution);
+            
+            // Get login distribution by browser
+            List<Object[]> browserStats = userActivityRepository.countLoginsByBrowserName();
+            Map<String, Long> browserDistribution = new HashMap<>();
+            for (Object[] stat : browserStats) {
+                String browserName = (String) stat[0];
+                Long count = (Long) stat[1];
+                // Handle null keys
+                if (browserName == null) browserName = "Unknown";
+                browserDistribution.put(browserName, count);
+            }
+            stats.put("browserDistribution", browserDistribution);
+            
+            // Get login distribution by OS
+            List<Object[]> osStats = userActivityRepository.countLoginsByOperatingSystem();
+            Map<String, Long> osDistribution = new HashMap<>();
+            for (Object[] stat : osStats) {
+                String osName = (String) stat[0];
+                Long count = (Long) stat[1];
+                // Handle null keys
+                if (osName == null) osName = "Unknown";
+                osDistribution.put(osName, count);
+            }
+            stats.put("osDistribution", osDistribution);
+        } catch (Exception e) {
+            // Add a fallback for empty stats in case of errors
+            stats.put("recentLogins", 0L);
+            stats.put("deviceDistribution", new HashMap<String, Long>());
+            stats.put("browserDistribution", new HashMap<String, Long>());
+            stats.put("osDistribution", new HashMap<String, Long>());
+            stats.put("error", e.getMessage());
+        }
         
         return stats;
     }

@@ -193,10 +193,18 @@ public class AuthController {
 
     @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        userRepository.delete(user);
-        return ResponseEntity.ok("User deleted successfully.");
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // The cascading delete will automatically handle UserActivity records
+            userRepository.delete(user);
+            return ResponseEntity.ok("User deleted successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting user: " + e.getMessage());
+        }
     }
 
     @PostMapping("/forgot-password")

@@ -200,7 +200,15 @@ export class UserTrackingComponent implements OnInit {
       .subscribe({
         next: (stats) => {
           this.stats = stats;
-          this.renderCharts();
+          // Check if we have valid data to render charts
+          if (stats && stats.deviceDistribution && 
+              Object.keys(stats.deviceDistribution).length > 0) {
+            this.renderCharts();
+          } else {
+            console.warn('Dashboard stats returned empty data');
+            // Initialize empty charts to avoid errors
+            this.initializeEmptyCharts();
+          }
         },
         error: (err) => {
           console.error('Failed to load dashboard stats', err);
@@ -211,33 +219,49 @@ export class UserTrackingComponent implements OnInit {
   }
 
   loadRecentActivities(activityType: string = 'all'): void {
+    this.selectedActivityType = activityType;
     this.loading = true;
-    let url;
+    this.error = '';
     
+    let apiUrl = '';
     if (activityType === 'all') {
-      // Format dates as ISO strings without milliseconds to match Java LocalDateTime parsing
-      const startDate = this.getLastMonthDateString();
-      const endDate = this.getCurrentDateString();
-      url = `${this.API_URL}/date-range?startDate=${startDate}&endDate=${endDate}`;
-      console.log('Requesting user activities with URL:', url);
+      // Load ALL types - this is a fallback option
+      apiUrl = `${this.API_URL}/date-range?startDate=${this.getLastMonthDateString()}&endDate=${this.getCurrentDateString()}`;
     } else {
-      url = `${this.API_URL}/type/${activityType}`;
+      // Load specific activity type
+      apiUrl = `${this.API_URL}/type/${activityType}`;
     }
-
-    this.http.get<UserActivity[]>(url)
+    
+    this.http.get<UserActivity[]>(apiUrl)
       .subscribe({
         next: (activities) => {
-          this.allActivities = activities;
-          this.filteredActivities = [...activities];
-          this.totalItems = activities.length;
-          this.currentPage = 1; // Reset to first page when loading new data
-          this.updatePaginatedActivities();
+          if (activities && Array.isArray(activities)) {
+            this.activities = activities;
+            this.allActivities = [...activities];
+            this.filteredActivities = [...activities];
+            this.totalItems = activities.length;
+            this.updatePaginatedActivities();
+          } else {
+            // Handle case where response is not an array
+            console.warn('Expected array of activities but got:', activities);
+            this.activities = [];
+            this.allActivities = [];
+            this.filteredActivities = [];
+            this.totalItems = 0;
+            this.updatePaginatedActivities();
+          }
           this.loading = false;
         },
         error: (err) => {
-          console.error('Failed to load activities', err);
-          this.error = 'Failed to load user activities. Please try again later.';
+          console.error('Failed to load user activities', err);
+          this.error = 'Failed to load activity data. Please try again later.';
           this.loading = false;
+          // Initialize with empty arrays
+          this.activities = [];
+          this.allActivities = [];
+          this.filteredActivities = [];
+          this.totalItems = 0;
+          this.updatePaginatedActivities();
         }
       });
   }
@@ -246,25 +270,54 @@ export class UserTrackingComponent implements OnInit {
     this.loadRecentActivities(this.selectedActivityType);
   }
 
-  private renderCharts(): void {
-    if (!this.stats) return;
+  private  initializeEmptyCharts(): void {
+    // Set default empty stats to avoid errors
+    if (!this.stats) {
+      this.stats = {
+        recentLogins: 0,
+        deviceDistribution: { 'No Data': 1 },
+        browserDistribution: { 'No Data': 1 },
+        osDistribution: { 'No Data': 1 }
+      };
+    }
     
-    // Destroy existing charts if they exist
+    // Clear any existing charts
     if (this.deviceChart) this.deviceChart.destroy();
     if (this.browserChart) this.browserChart.destroy();
     if (this.osChart) this.osChart.destroy();
     
-    if (this.stats) {
-      try {
-        // Create charts with appropriate color schemes for each chart type
-        this.createChart('deviceChart', 'Device Distribution', this.stats.deviceDistribution, this.COLORS_DEVICE);
-        this.createChart('browserChart', 'Browser Distribution', this.stats.browserDistribution, this.COLORS_BROWSER);
-        this.createChart('osChart', 'OS Distribution', this.stats.osDistribution, this.COLORS_OS);
-      } catch (error) {
-        console.error('Error rendering charts:', error);
-        this.error = 'Failed to render charts. Please try again later.';
-      }
+    // Create placeholder charts
+    this.createChart('deviceChart', 'Device Types', { 'No Data': 1 }, this.COLORS_DEVICE);
+    this.createChart('browserChart', 'Browsers', { 'No Data': 1 }, this.COLORS_BROWSER);
+    this.createChart('osChart', 'Operating Systems', { 'No Data': 1 }, this.COLORS_OS);
+    
+    this.loading = false;
+  }
+  
+  renderCharts(): void {
+    if (!this.stats) {
+      console.error('No stats available for chart rendering');
+      this.initializeEmptyCharts();
+      return;
     }
+    
+    // Clear any existing charts
+    if (this.deviceChart) this.deviceChart.destroy();
+    if (this.browserChart) this.browserChart.destroy();
+    if (this.osChart) this.osChart.destroy();
+    
+    // Create new charts with null/undefined checks
+    this.createChart('deviceChart', 'Device Types', 
+      this.stats.deviceDistribution || { 'No Data': 1 }, 
+      this.COLORS_DEVICE);
+      
+    this.createChart('browserChart', 'Browsers', 
+      this.stats.browserDistribution || { 'No Data': 1 }, 
+      this.COLORS_BROWSER);
+      
+    this.createChart('osChart', 'Operating Systems', 
+      this.stats.osDistribution || { 'No Data': 1 }, 
+      this.COLORS_OS);
     
     this.loading = false;
   }
