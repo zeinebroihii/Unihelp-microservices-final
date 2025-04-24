@@ -7,5 +7,12 @@ export const routes: Routes = [
     data: {
       title: 'Widgets'
     }
+  },
+  {
+    path: 'user-tracking',
+    loadComponent: () => import('./user-tracking/user-tracking.component').then(m => m.UserTrackingComponent),
+    data: {
+      title: 'User Tracking'
+    }
   }
 ];

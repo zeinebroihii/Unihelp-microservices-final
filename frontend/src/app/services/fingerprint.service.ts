@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 export interface DeviceInfo {
   visitorId: string;
@@ -19,6 +22,31 @@ export interface LoginEvent {
   deviceInfo: DeviceInfo;
 }
 
+export interface UserActivityDto {
+  id?: number;
+  userId: number;
+  userName?: string;
+  userEmail?: string;
+  userRole?: string;
+  activityType: string;
+  timestamp?: Date;
+  ipAddress?: string;
+  deviceType: string;
+  browserName: string;
+  osName: string;
+  screenResolution?: string;
+  timezone?: string;
+  language?: string;
+  visitorId: string;
+  userAgent?: string;
+  referrer?: string;
+  country?: string;
+  city?: string;
+  sessionId?: string;
+  successful?: boolean;
+  failureReason?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,8 +54,9 @@ export class FingerprintService {
   private readonly STORAGE_KEY = 'unihelp_login_events';
   private readonly ADMIN_STORAGE_KEY = 'unihelp_admin_login_events';
   private readonly SESSION_STORAGE_KEY = 'latest_login_event';
+  private readonly API_URL = 'http://localhost:8888/USER/api/auth/user-activity';
 
-  constructor() {
+  constructor(private http: HttpClient) {
     console.log('User Agent tracking service initialized');
   }
 
@@ -95,10 +124,13 @@ export class FingerprintService {
         deviceInfo
       };
 
-      // 1. Store in main app's localStorage
+      // 1. Store in backend
+      this.recordActivityToBackend('LOGIN', userId, deviceInfo, true);
+
+      // 2. Store in main app's localStorage as backup
       this.storeLoginEvent(loginEvent);
 
-      // 2. Store for admin dashboard in multiple ways
+      // 3. Store for admin dashboard in multiple ways
       this.storeForAdminDashboard(loginEvent);
 
       return Promise.resolve();
@@ -106,6 +138,59 @@ export class FingerprintService {
       console.error('Error recording login:', error);
       return Promise.reject(error);
     }
+  }
+
+  async recordLogout(userId: number): Promise<void> {
+    try {
+      const deviceInfo = await this.getDeviceInfo();
+      this.recordActivityToBackend('LOGOUT', userId, deviceInfo, true);
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error recording logout:', error);
+      return Promise.reject(error);
+    }
+  }
+
+  async recordPageView(userId: number | null, page: string): Promise<void> {
+    try {
+      if (userId) {
+        const deviceInfo = await this.getDeviceInfo();
+        this.recordActivityToBackend('PAGE_VIEW', userId, deviceInfo, true, page);
+      }
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error recording page view:', error);
+      return Promise.reject(error);
+    }
+  }
+
+  private recordActivityToBackend(activityType: string, userId: number, deviceInfo: DeviceInfo, successful: boolean, failureReason?: string): void {
+    const activity: UserActivityDto = {
+      userId: userId,
+      activityType: activityType,
+      deviceType: deviceInfo.deviceType,
+      browserName: deviceInfo.browserName,
+      osName: deviceInfo.osName,
+      visitorId: deviceInfo.visitorId,
+      screenResolution: deviceInfo.screenResolution,
+      timezone: deviceInfo.timezone,
+      language: deviceInfo.language,
+      userAgent: navigator.userAgent,
+      referrer: document.referrer,
+      sessionId: this.getSessionId(),
+      successful: successful,
+      failureReason: failureReason
+    };
+
+    this.http.post<UserActivityDto>(`${this.API_URL}/record`, activity)
+      .pipe(
+        tap(response => console.log('Activity recorded to backend:', response)),
+        catchError(error => {
+          console.error('Failed to record activity to backend:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   /**
@@ -218,6 +303,25 @@ export class FingerprintService {
       console.error('Error reading login events:', error);
       return [];
     }
+  }
+  
+  getUserActivity(userId: number): Observable<UserActivityDto[]> {
+    return this.http.get<UserActivityDto[]>(`${this.API_URL}/user/${userId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching user activity:', error);
+          return of([]);
+        })
+      );
+  }
+  
+  private getSessionId(): string {
+    let sessionId = sessionStorage.getItem('unihelp_session_id');
+    if (!sessionId) {
+      sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem('unihelp_session_id', sessionId);
+    }
+    return sessionId;
   }
   
   /**

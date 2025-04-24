@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 export interface DeviceInfo {
   visitorId: string;
@@ -19,13 +22,39 @@ export interface LoginEvent {
   deviceInfo: DeviceInfo;
 }
 
+export interface UserActivityDto {
+  id?: number;
+  userId: number;
+  userName?: string;
+  userEmail?: string;
+  userRole?: string;
+  activityType: string;
+  timestamp?: Date;
+  ipAddress?: string;
+  deviceType: string;
+  browserName: string;
+  osName: string;
+  screenResolution?: string;
+  timezone?: string;
+  language?: string;
+  visitorId: string;
+  userAgent?: string;
+  referrer?: string;
+  country?: string;
+  city?: string;
+  sessionId?: string;
+  successful?: boolean;
+  failureReason?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class FingerprintService {
   private readonly STORAGE_KEY = 'unihelp_login_events';
+  private readonly API_URL = 'http://localhost:8888/USER/api/auth/user-activity';
   
-  constructor() {
+  constructor(private http: HttpClient) {
     console.log('User Agent tracking service initialized');
   }
   
@@ -96,6 +125,63 @@ export class FingerprintService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(events));
   }
   
+  /**
+   * Gets activity data from the backend API
+   */
+  getUserActivities(): Observable<UserActivityDto[]> {
+    return this.http.get<UserActivityDto[]>(`${this.API_URL}/date-range?startDate=${this.getLastMonthDateString()}&endDate=${this.getCurrentDateString()}`)
+      .pipe(
+        tap(activities => console.log(`Fetched ${activities.length} user activities`)),
+        catchError(error => {
+          console.error('Error fetching user activities:', error);
+          return of([]);
+        })
+      );
+  }
+
+  getActivityByType(activityType: string): Observable<UserActivityDto[]> {
+    return this.http.get<UserActivityDto[]>(`${this.API_URL}/type/${activityType}`)
+      .pipe(
+        tap(activities => console.log(`Fetched ${activities.length} ${activityType} activities`)),
+        catchError(error => {
+          console.error(`Error fetching ${activityType} activities:`, error);
+          return of([]);
+        })
+      );
+  }
+
+  getUserActivityHistory(userId: number): Observable<UserActivityDto[]> {
+    return this.http.get<UserActivityDto[]>(`${this.API_URL}/user/${userId}`)
+      .pipe(
+        tap(activities => console.log(`Fetched ${activities.length} activities for user ${userId}`)),
+        catchError(error => {
+          console.error(`Error fetching activities for user ${userId}:`, error);
+          return of([]);
+        })
+      );
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get(`${this.API_URL}/dashboard-stats`)
+      .pipe(
+        tap(stats => console.log('Fetched dashboard stats:', stats)),
+        catchError(error => {
+          console.error('Error fetching dashboard stats:', error);
+          return of({});
+        })
+      );
+  }
+
+  private getCurrentDateString(): string {
+    return new Date().toISOString();
+  }
+  
+  private getLastMonthDateString(): string {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    return date.toISOString();
+  }
+
   /**
    * Gets all login events
    */

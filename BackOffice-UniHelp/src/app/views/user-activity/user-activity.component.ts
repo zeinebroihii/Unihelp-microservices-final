@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FingerprintService, LoginEvent } from '../../services/fingerprint.service';
+import { FingerprintService, LoginEvent, UserActivityDto } from '../../services/fingerprint.service';
 import { UserService } from '../../services/user.service';
 import {
   CardModule,
@@ -40,6 +40,7 @@ export class UserActivityComponent implements OnInit {
   // Tracking data
   loginEvents: LoginEvent[] = [];
   filteredEvents: LoginEvent[] = [];
+  userActivities: UserActivityDto[] = [];
   uniqueUsers: { userId: number; userName: string; userEmail: string }[] = [];
   
   // Filter state
@@ -59,6 +60,9 @@ export class UserActivityComponent implements OnInit {
   mobileCount = 0;
   desktopCount = 0;
   tabletCount = 0;
+  
+  // Event listener reference
+  private messageEventListener: any;
   
   constructor(
     private fingerprintService: FingerprintService,
@@ -258,7 +262,7 @@ export class UserActivityComponent implements OnInit {
         if (json) {
           const events = JSON.parse(json);
           if (Array.isArray(events) && events.length > 0) {
-            console.log(`📊 Found ${events.length} events directly in ${key}`);
+            console.log(`Found ${events.length} events directly in ${key}`);
             directEvents = [...directEvents, ...events];
           }
         }
@@ -268,7 +272,7 @@ export class UserActivityComponent implements OnInit {
     }
     
     if (adminEvents.length > 0 || sharedEvents.length > 0 || directEvents.length > 0) {
-      console.log('📥 Found new login events, refreshing data');
+      console.log('Found new login events, refreshing data');
       this.loadLoginData();
     }
   }
@@ -306,7 +310,8 @@ export class UserActivityComponent implements OnInit {
     this.loadLoginData();
     
     // Set up window event listener for cross-domain messages
-    window.addEventListener('message', this.handleCrossDomainMessage.bind(this));
+    this.messageEventListener = (event: MessageEvent) => this.handleCrossDomainMessage(event);
+    window.addEventListener('message', this.messageEventListener);
     
     // Start polling for new events every 3 seconds
     setInterval(() => {
@@ -317,7 +322,10 @@ export class UserActivityComponent implements OnInit {
     setInterval(() => this.checkForNewEvents(), 3000);
   }
   
-
+  ngOnDestroy(): void {
+    // Clean up event listener
+    window.removeEventListener('message', this.messageEventListener);
+  }
   
   /**
    * Checks URL parameters for login event data
@@ -352,11 +360,6 @@ export class UserActivityComponent implements OnInit {
     } catch (error) {
       console.error('Error processing login event from URL:', error);
     }
-  }
-  
-  ngOnDestroy(): void {
-    // Clean up event listener
-    window.removeEventListener('message', this.handleCrossDomainMessage.bind(this));
   }
   
   /**
@@ -395,111 +398,143 @@ export class UserActivityComponent implements OnInit {
     }
   }
   
+  /**
+   * Loads login events from all available sources
+   */
   loadLoginData(): void {
     this.loading = true;
-    console.log('Loading login data - UserActivityComponent');
     
-    // Check all possible localStorage keys directly to catch test data too
-    let directEvents: LoginEvent[] = [];
-    const directKeys = ['unihelp_login_events', 'unihelp_admin_login_events', 'admin_login_events'];
+    // Get events from the main app
+    const mainAppEvents = this.getMainAppLoginEvents();
+    console.log(`Found ${mainAppEvents.length} events from main app`);
     
-    for (const key of directKeys) {
-      try {
-        const json = localStorage.getItem(key);
-        if (json) {
-          const events = JSON.parse(json);
-          if (Array.isArray(events) && events.length > 0) {
-            console.log(`📊 Found ${events.length} events directly in ${key}`);
-            directEvents = [...directEvents, ...events];
-          }
-        }
-      } catch (e) {
-        console.error(`Error reading from ${key}:`, e);
-      }
-    }
+    // Get events from local storage (admin app-specific)
+    const localEvents = this.fingerprintService.getAllLoginEvents();
+    console.log(`Found ${localEvents.length} events from admin app storage`);
     
-    // 1. Load events from the BackOffice localStorage first
-    const backofficeEvents = this.fingerprintService.getAllLoginEvents() || [];
-    console.log('📊 BackOffice login events (unihelp_login_events):', backofficeEvents.length);
+    // Combine all events
+    this.loginEvents = [...mainAppEvents, ...localEvents];
     
-    // 2. Also check for events shared from the main app
-    const mainAppEvents = this.getMainAppLoginEvents() || [];
-    console.log('📊 Main app shared login events (admin_login_events):', mainAppEvents.length);
-    
-    // 3. Try to access shared storage (backup approach)
-    const sharedLoginEvents = this.getSharedLoginEvents() || [];
-    console.log('📊 Shared login events (across domains):', sharedLoginEvents.length);
-    
-    // 4. Combine all sources
-    this.loginEvents = [...backofficeEvents, ...mainAppEvents, ...sharedLoginEvents, ...directEvents];
-    console.log('📥 Total login events (combined):', this.loginEvents.length);
-    
-    // 5. Remove duplicates (in case some events appear in both sources)
+    // Remove duplicates based on timestamp and userId
     this.removeDuplicateEvents();
-    console.log('Unique login events (after deduplication):', this.loginEvents.length);
+    console.log(`After deduplication: ${this.loginEvents.length} unique events`);
     
-    // 6. Sort by timestamp (newest first)
+    // Sort events by timestamp (most recent first)
     this.loginEvents.sort((a, b) => b.timestamp - a.timestamp);
     
-    // 7. Get unique users
+    // Extract unique users
     this.uniqueUsers = this.extractUniqueUsers();
-    console.log('Unique users:', this.uniqueUsers.length);
     
-    this.filteredEvents = [...this.loginEvents];
-    
-    // 8. Apply initial filter (no filter)
-    this.applyFilters();
-    
-    // 9. Calculate stats
+    // Calculate stats
     this.calculateStats();
     
-    // 10. Set up event listener for cross-window messages
-    this.setupMessageListener();
-    
-    // 11. Save the combined data in the local store for future reference
-    this.saveLoginEvents(this.loginEvents);
+    // Apply initial filters
+    this.applyFilters();
     
     this.loading = false;
   }
   
-  applyFilters(): void {
+  /**
+   * Loads user activities from the backend API
+   */
+  loadUserActivityFromApi(): void {
+    if (!this.fingerprintService.getUserActivities) {
+      console.log('getUserActivities method not available');
+      return;
+    }
+    
     this.loading = true;
     
-    // Start with all events
-    let filtered = [...this.loginEvents];
+    this.fingerprintService.getUserActivities().subscribe({
+      next: (activities: UserActivityDto[]) => {
+        this.userActivities = activities;
+        console.log(`Loaded ${activities.length} user activities from API`);
+        
+        // Update the unique users list with any additional users from the API
+        activities.forEach((activity: UserActivityDto) => {
+          if (activity.userId && activity.userName && activity.userEmail) {
+            const existingUser = this.uniqueUsers.find(u => u.userId === activity.userId);
+            if (!existingUser) {
+              this.uniqueUsers.push({
+                userId: activity.userId,
+                userName: activity.userName,
+                userEmail: activity.userEmail
+              });
+            }
+          }
+        });
+        
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading user activities from API:', error);
+        this.loading = false;
+      }
+    });
+  }
+  
+  /**
+   * Apply filters to the login events
+   */
+  applyFilters(): void {
+    this.filteredEvents = this.loginEvents.filter(event => {
+      // Apply user filter
+      if (this.selectedUserId !== null && event.userId !== this.selectedUserId) {
+        return false;
+      }
+      
+      // Apply search term filter
+      if (this.searchTerm) {
+        const searchTerm = this.searchTerm.toLowerCase();
+        const userName = event.userName?.toLowerCase() || '';
+        const userEmail = event.userEmail?.toLowerCase() || '';
+        const browser = event.deviceInfo?.browserName?.toLowerCase() || '';
+        const os = event.deviceInfo?.osName?.toLowerCase() || '';
+        
+        if (!userName.includes(searchTerm) && 
+            !userEmail.includes(searchTerm) && 
+            !browser.includes(searchTerm) && 
+            !os.includes(searchTerm)) {
+          return false;
+        }
+      }
+      
+      // Apply date range filter
+      if (this.startDate && new Date(event.timestamp) < new Date(this.startDate)) {
+        return false;
+      }
+      
+      if (this.endDate && new Date(event.timestamp) > new Date(this.endDate)) {
+        return false;
+      }
+      
+      // Apply device type filter
+      if (this.deviceTypeFilter && event.deviceInfo.deviceType !== this.deviceTypeFilter) {
+        return false;
+      }
+      
+      return true;
+    });
     
-    // Filter by user ID
-    if (this.selectedUserId) {
-      filtered = filtered.filter(event => event.userId === this.selectedUserId);
-    }
-    
-    // Filter by search term (in user name or email)
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(event => 
-        (event.userName?.toLowerCase().includes(term)) ||
-        (event.userEmail?.toLowerCase().includes(term)));
-    }
-    
-    // Filter by date range
-    if (this.startDate) {
-      const start = new Date(this.startDate).getTime();
-      filtered = filtered.filter(event => event.timestamp >= start);
-    }
-    
-    if (this.endDate) {
-      const end = new Date(this.endDate).getTime() + 86400000; // Add one day to include the end date
-      filtered = filtered.filter(event => event.timestamp <= end);
-    }
-    
-    // Filter by device type
-    if (this.deviceTypeFilter) {
-      filtered = filtered.filter(event => 
-        event.deviceInfo.deviceType === this.deviceTypeFilter
+    // If we have API data, apply filters to that as well
+    // This would typically involve making a new API call with the filters
+    if (this.selectedUserId !== null && this.fingerprintService.getUserActivityHistory) {
+      this.fingerprintService.getUserActivityHistory(this.selectedUserId).subscribe({
+        next: (activities: UserActivityDto[]) => {
+          this.userActivities = activities;
+          console.log(`Loaded ${activities.length} activities for user ${this.selectedUserId}`);
+        },
+        error: (error: any) => {
+          console.error(`Error loading activities for user ${this.selectedUserId}:`, error);
+        }
+      });
+    } else if (this.deviceTypeFilter) {
+      // For device type filtering, we would need to filter on the client side
+      // as our API doesn't have an endpoint for this specific filter
+      this.userActivities = this.userActivities.filter(activity => 
+        activity.deviceType === this.deviceTypeFilter
       );
     }
-    
-    this.filteredEvents = filtered;
   }
   
   calculateStats(): void {
@@ -550,7 +585,7 @@ export class UserActivityComponent implements OnInit {
    * Periodically checks for new login events
    */
   private checkForNewEvents(): void {
-    // Check for new login events
+    // Get the latest events from the main app
     const mainAppEvents = this.getMainAppLoginEvents();
     const sharedEvents = this.getSharedLoginEvents();
     

@@ -21,16 +21,8 @@ export const navItems: INavData[] = [
         url: '/users/list'
       },
       {
-        name: 'Banned Users',
-        url: '/users/banned'
-      },
-      {
-        name: 'Active Users',
-        url: '/users/active'
-      },
-      {
-        name: 'Login Activity',
-        url: '/user-activity'
+        name: 'User Tracking',
+        url: '/widgets/user-tracking'
       }
     ]
   },

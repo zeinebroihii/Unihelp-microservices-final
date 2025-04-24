@@ -87,7 +87,7 @@
           <c-row>
             <c-col md="3">
               <label for="userSelect" class="form-label">User</label>
-              <select id="userSelect" [(ngModel)]="selectedUserId" class="form-select" (change)="applyFilters()">
+              <select id="userSelect" [(ngModel)]="selectedUserId" class="form-select">
                 <option [value]="null">All Users</option>
                 <option *ngFor="let user of uniqueUsers" [value]="user.userId">
                   {{user.userName}} ({{user.userEmail}})
@@ -97,22 +97,22 @@
             
             <c-col md="3">
               <label for="searchInput" class="form-label">Search</label>
-              <input id="searchInput" type="text" [(ngModel)]="searchTerm" class="form-control" placeholder="Search users..." (input)="applyFilters()">
+              <input id="searchInput" type="text" [(ngModel)]="searchTerm" class="form-control" placeholder="Search users...">
             </c-col>
             
             <c-col md="2">
               <label for="startDate" class="form-label">Start Date</label>
-              <input id="startDate" type="date" [(ngModel)]="startDate" class="form-control" (change)="applyFilters()">
+              <input id="startDate" type="date" [(ngModel)]="startDate" class="form-control">
             </c-col>
             
             <c-col md="2">
               <label for="endDate" class="form-label">End Date</label>
-              <input id="endDate" type="date" [(ngModel)]="endDate" class="form-control" (change)="applyFilters()">
+              <input id="endDate" type="date" [(ngModel)]="endDate" class="form-control">
             </c-col>
             
             <c-col md="2">
               <label for="deviceType" class="form-label">Device Type</label>
-              <select id="deviceType" [(ngModel)]="deviceTypeFilter" class="form-select" (change)="applyFilters()">
+              <select id="deviceType" [(ngModel)]="deviceTypeFilter" class="form-select">
                 <option value="">All Devices</option>
                 <option value="Desktop">Desktop</option>
                 <option value="Mobile">Mobile</option>
@@ -123,7 +123,10 @@
           
           <c-row class="mt-3">
             <c-col>
-              <button cButton color="secondary" (click)="resetFilters()">
+              <button cButton color="primary" (click)="applyFilters()">
+                <i class="icon cil-filter me-1"></i> Apply Filters
+              </button>
+              <button cButton color="secondary" class="ms-2" (click)="resetFilters()">
                 <i class="icon cil-reload me-1"></i> Reset Filters
               </button>
               <button cButton color="danger" class="ms-2" (click)="clearData()">
