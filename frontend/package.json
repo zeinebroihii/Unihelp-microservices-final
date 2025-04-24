@@ -20,6 +20,8 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
+    "@tinymce/tinymce-angular": "^8.0.1",
     "bootstrap": "^5.3.3",
     "font-awesome": "^4.7.0",
     "rxjs": "~7.8.0",

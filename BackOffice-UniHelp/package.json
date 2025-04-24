@@ -36,6 +36,7 @@
     "@coreui/icons": "^3.0.1",
     "@coreui/icons-angular": "~5.4.5",
     "@coreui/utils": "^2.0.2",
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
     "chart.js": "^4.4.8",
     "lodash-es": "^4.17.21",
     "ngx-scrollbar": "^13.0.3",

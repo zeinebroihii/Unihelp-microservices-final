@@ -27,6 +27,10 @@ export const navItems: INavData[] = [
       {
         name: 'Active Users',
         url: '/users/active'
+      },
+      {
+        name: 'Login Activity',
+        url: '/user-activity'
       }
     ]
   },
