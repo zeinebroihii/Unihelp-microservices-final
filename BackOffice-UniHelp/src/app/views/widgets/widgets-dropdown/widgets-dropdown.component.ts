@@ -12,6 +12,7 @@ import { ChartjsComponent } from '@coreui/angular-chartjs';
 import { RouterLink } from '@angular/router';
 import { IconDirective } from '@coreui/icons-angular';
 import { RowComponent, ColComponent, WidgetStatAComponent, TemplateIdDirective, ThemeDirective, DropdownComponent, ButtonDirective, DropdownToggleDirective, DropdownMenuDirective, DropdownItemDirective, DropdownDividerDirective } from '@coreui/angular';
+import { UserService, User } from '../../../services/user.service';
 
 @Component({
     selector: 'app-widgets-dropdown',
@@ -23,11 +24,32 @@ import { RowComponent, ColComponent, WidgetStatAComponent, TemplateIdDirective, 
 export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private userService: UserService
   ) {}
 
   data: any[] = [];
   options: any[] = [];
+  
+  // User statistics
+  userCount: number = 0;
+  userCountTrend: string = '';
+  userCountPercent: number = 0;
+  
+  // Google users statistics
+  googleUserCount: number = 0;
+  googleUserPercent: number = 0;
+  googleUserTrend: string = 'up';
+  
+  // Active users statistics
+  activeUserCount: number = 0;
+  activeUserPercent: number = 0;
+  
+  // User activity statistics
+  activityCount: number = 0;
+  activityPercent: number = 0;
+  activityTrend: string = 'down';
+  
   labels = [
     'January',
     'February',
@@ -123,7 +145,40 @@ export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
   };
 
   ngOnInit(): void {
+    this.loadUserCount();
     this.setData();
+  }
+
+  loadUserCount(): void {
+    this.userService.getAllUsers().subscribe({
+      next: (users: User[]) => {
+        // Total user stats
+        this.userCount = users.length;
+        this.userCountPercent = 12.4; // Hardcoded for now
+        this.userCountTrend = 'down'; // Hardcoded for now
+        
+        // Google users stats
+        this.googleUserCount = users.filter(user => user.googleId && user.googleId.length > 0).length;
+        this.googleUserPercent = this.userCount > 0 ? 
+          Math.round((this.googleUserCount / this.userCount) * 100) : 0;
+        
+        // Active users stats
+        this.activeUserCount = users.filter(user => !user.banned).length;
+        this.activeUserPercent = this.userCount > 0 ? 
+          Math.round((this.activeUserCount / this.userCount) * 100) : 0;
+        
+        // User activity stats - could connect to UserActivity data
+        // For now we'll use a placeholder
+        this.activityCount = 44;
+        this.activityPercent = 23.6;
+        
+        this.changeDetectorRef.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load user count', err);
+        this.userCount = 0;
+      }
+    });
   }
 
   ngAfterContentInit(): void {

@@ -13,6 +13,8 @@ export interface User {
   profileImage?: string;
   role: string;
   banned: boolean;
+  googleId?: string;
+  profileCompleted?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -331,11 +331,12 @@ export class FingerprintService {
     const ua = userAgent.toLowerCase();
     
     let browser = 'Unknown';
-    if (ua.includes('firefox')) browser = 'Firefox';
+    // Order matters! Check most specific browsers first
+    if (ua.includes('opera') || ua.includes('opr')) browser = 'Opera';
     else if (ua.includes('edg')) browser = 'Edge';
+    else if (ua.includes('firefox')) browser = 'Firefox';
+    else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari';
     else if (ua.includes('chrome')) browser = 'Chrome';
-    else if (ua.includes('safari')) browser = 'Safari';
-    else if (ua.includes('opera') || ua.includes('opr')) browser = 'Opera';
     
     let os = 'Unknown';
     if (ua.includes('windows')) os = 'Windows';

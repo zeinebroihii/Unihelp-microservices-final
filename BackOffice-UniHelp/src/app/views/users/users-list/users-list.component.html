@@ -6,11 +6,11 @@
 </div>
 <div class="mb-3 d-flex flex-wrap align-items-center gap-2 justify-content-between">
   <div class="d-flex gap-3 align-items-center" style="background: #f8f9fa; border-radius: 2rem; padding: 0.75rem 1.25rem;">
-  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterRole">
+  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterRole" (ngModelChange)="currentPage = 1; updatePaginatedUsers()">
     <option value="">Role: All</option>
     <option *ngFor="let role of uniqueRoles" [value]="role">{{ role }}</option>
   </select>
-  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterBanned">
+  <select class="form-select form-select-sm rounded-pill shadow-sm border-0" style="width:140px;min-width:110px;" [(ngModel)]="filterBanned" (ngModelChange)="currentPage = 1; updatePaginatedUsers()">
     <option value="">Banned: All</option>
     <option value="banned">Banned</option>
     <option value="notbanned">Not Banned</option>
@@ -24,6 +24,7 @@
         style="padding-right:2.5rem;"
         placeholder="Search..."
         [(ngModel)]="searchTerm"
+        (ngModelChange)="currentPage = 1; updatePaginatedUsers()"
       />
       <span class="input-group-text bg-white border-start-0" style="position:absolute;right:0;z-index:10;">
         <i class="bi bi-search"></i>
@@ -43,9 +44,9 @@
     </tr>
   </thead>
   <tbody>
-    <ng-container *ngFor="let user of filteredUsers; let i = index">
+    <ng-container *ngFor="let user of paginatedUsers; let i = index">
       <tr>
-        <th scope="row">{{ i + 1 }}</th>
+        <th scope="row">{{ (currentPage - 1) * pageSize + i + 1 }}</th>
         <td>
           <div class="d-flex align-items-center">
             <ng-container *ngIf="user.profileImage; else defaultAvatar">
@@ -133,3 +134,31 @@
     </ng-container>
   </tbody>
 </table>
+
+<!-- Pagination Controls -->
+<div *ngIf="filteredUsers.length > 0" class="d-flex justify-content-between align-items-center mt-3">
+  <div>
+    <span class="text-muted">Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalItems) }} of {{ totalItems }} entries</span>
+  </div>
+  <nav aria-label="Users pagination">
+    <ul class="pagination">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <a class="page-link" href="javascript:void(0)" (click)="previousPage()" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+        <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+        <a class="page-link" href="javascript:void(0)" (click)="nextPage()" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<div *ngIf="filteredUsers.length === 0 && !loading" class="alert alert-warning text-center my-4">
+  <p class="mb-0">No users found matching your criteria.</p>
+</div>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import {Observable, of, throwError} from 'rxjs';
+import { FingerprintService } from './fingerprint.service';
 import { catchError, tap } from 'rxjs/operators';
 declare const google: any;
 
@@ -46,7 +47,7 @@ export interface User {
 export class AuthService {
   private apiUrl = 'http://localhost:8888/USER/api/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private fingerprintService: FingerprintService) {}
 
   register(formData: FormData): Observable<any> {
     return this.http
@@ -75,6 +76,18 @@ export class AuthService {
 
   logout(): Observable<string> {
     const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    let userId = 0;
+    
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        userId = userData.id;
+      } catch (e) {
+        console.error('Error parsing user data during logout:', e);
+      }
+    }
+    
     if (!token) {
       console.log('No token found in localStorage during logout');
       localStorage.clear();
@@ -84,6 +97,13 @@ export class AuthService {
     const headers = {
       Authorization: `Bearer ${token}`,
     };
+    
+    // Record the logout activity
+    if (userId > 0) {
+      this.fingerprintService.recordLogout(userId)
+        .catch(err => console.error('Error recording logout activity:', err));
+    }
+    
     return this.http.post<string>(`${this.apiUrl}/logout`, {}, { headers }).pipe(
       tap(() => {
         console.log('Logout successful, clearing localStorage');

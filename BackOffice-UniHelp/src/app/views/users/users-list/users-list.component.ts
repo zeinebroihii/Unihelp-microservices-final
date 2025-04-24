@@ -12,6 +12,9 @@ import { UserService, User } from '../../../services/user.service';
   styleUrl: './users-list.component.scss'
 })
 export class UsersListComponent implements OnInit {
+  // Reference to Math for use in the template
+  public Math = Math;
+  
   users: User[] = [];
   loading = true;
   error: string = '';
@@ -22,6 +25,11 @@ export class UsersListComponent implements OnInit {
   searchTerm: string = '';
   filterRole: string = '';
   filterBanned: string = '';
+  
+  // Pagination properties
+  public currentPage = 1;
+  public pageSize = 6; // 6 rows per page as requested
+  public paginatedUsers: User[] = [];
 
   get uniqueRoles(): string[] {
     // Get all unique roles from the users list
@@ -48,12 +56,62 @@ export class UsersListComponent implements OnInit {
     }
     return filtered;
   }
+  
+  // Getter for total number of filtered users
+  get totalItems(): number {
+    return this.filteredUsers.length;
+  }
 
   toggleExpand(userId: number) {
     this.expandedUserId = this.expandedUserId === userId ? null : userId;
   }
 
   constructor(private userService: UserService) {}
+  
+  // Pagination methods
+  public updatePaginatedUsers(): void {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    this.paginatedUsers = this.filteredUsers.slice(startIndex, startIndex + this.pageSize);
+  }
+  
+  public goToPage(page: number): void {
+    if (page >= 1 && page <= this.getTotalPages()) {
+      this.currentPage = page;
+      this.updatePaginatedUsers();
+    }
+  }
+  
+  public previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+  
+  public nextPage(): void {
+    if (this.currentPage < this.getTotalPages()) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+  
+  public getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+  
+  public getPageNumbers(): number[] {
+    const totalPages = this.getTotalPages();
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    // Show 5 page numbers with current page in the middle when possible
+    if (this.currentPage <= 3) {
+      return [1, 2, 3, 4, 5];
+    } else if (this.currentPage >= totalPages - 2) {
+      return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    } else {
+      return [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2];
+    }
+  }
 
   ngOnInit(): void {
     this.userService.getAllUsers().subscribe({
@@ -61,6 +119,7 @@ export class UsersListComponent implements OnInit {
         console.log('Fetched users:', users); // DEBUG
         this.users = users;
         this.loading = false;
+        this.updatePaginatedUsers(); // Initialize pagination
       },
       error: (err) => {
         this.error = err.message || 'Failed to load users.';
@@ -166,6 +225,7 @@ export class UsersListComponent implements OnInit {
       next: (users) => {
         this.users = users;
         this.loading = false;
+        this.updatePaginatedUsers(); // Update pagination after refreshing users
       },
       error: (err) => {
         this.error = err.message || 'Failed to load users.';
