@@ -31,6 +31,11 @@ public class BlogController {
         return blogService.getAllBlogs();
     }
 
+    @PutMapping("verify/{id}")
+    public Blog verifyBlog(@PathVariable Long id) {
+        return blogService.VerifyBlog(id);
+    }
+
     @PutMapping("/{id}")
     public Blog updateBlog(@PathVariable Long id, @RequestBody Blog blog) {
         return blogService.updateBlog(id, blog);

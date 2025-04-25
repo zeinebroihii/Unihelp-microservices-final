@@ -7,6 +7,7 @@ import com.unihelp.Blog.exceptions.BlogNotFoundException;
 import com.unihelp.Blog.model.User;
 import com.unihelp.Blog.repositories.BlogRepository;
 import com.unihelp.Blog.repositories.CommentRepository;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRestClientt userRestClient;
     private final BlogService blogService;
+    private final EmailService emailService;
     public Comment addComment(Comment comment, long id) {
         // Check if course exists
         Blog blog = blogRepository.findById(comment.getBlog().getIdBlog())
@@ -36,6 +38,21 @@ public class CommentService {
         comment.setUser(user);
 
         comment.setUserId(user.getId());
+
+        // Send email to blog creator
+        try {
+            User commenter = userRestClient.findUserById(comment.getUserId());
+            User blogCreator = userRestClient.findUserById(blog.getUserId());
+            emailService.sendCommentNotificationEmail(
+                    blogCreator.getEmail(),
+                    blog.getTitle(),
+                    commenter.getFirstName() != null ? commenter.getFirstName() : "Anonymous",
+                    comment.getContent()
+            );
+        } catch (MessagingException e) {
+            // Log the error, but don't fail the comment creation
+            System.err.println("Failed to send email: " + e.getMessage());
+        }
 
         return commentRepository.save(comment);
     }

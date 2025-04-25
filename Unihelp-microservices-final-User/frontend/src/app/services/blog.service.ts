@@ -14,6 +14,7 @@ export interface Blog {
   userId: number;
   imagepath: string;
   comments: Comment[] | null;
+  isVerified: boolean;
 }
 
 @Injectable({

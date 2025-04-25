@@ -36,13 +36,8 @@ export class AddBlogComponent implements OnInit {
 
   // List of bad words for detection (random selection for testing)
   private badWords: string[] = [
-    'damn',
-    'hell',
-    'jerk',
-    'stupid',
-    'idiot',
-    'fool',
-    'rude'
+    'est',
+    'nomm'
   ];
 
   // Sightengine API credentials (ideally from environment or config service)
@@ -280,7 +275,8 @@ export class AddBlogComponent implements OnInit {
           imagepath: imageName || this.blogForm.value.imagepath || '',
           comments: null,
           user: null,
-          userId: this.staticUserId
+          userId: this.staticUserId,
+          isVerified: false
         };
 
         if (!this.isEditMode && !blog.imagepath) {

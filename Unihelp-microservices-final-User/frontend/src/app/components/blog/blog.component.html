@@ -37,7 +37,7 @@
           </ng-template>
         </div>
         <div class="blog-grid-text p-4">
-          <h3 class="h5 mb-3"><a [routerLink]="['/blog', blog.idBlog]">{{ blog.title }}</a></h3>
+          <h3 class="h5 mb-3"><a [routerLink]="['/blog', blog.idBlog]">{{ blog.title }} {{blog.isVerified}}</a></h3>
           <p class="display-30">{{ blog.content | slice:0:47 }}...</p>
           <div class="meta meta-style2">
             <ul>

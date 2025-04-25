@@ -23,11 +23,14 @@ public class Blog {
     @Column(nullable = false)
     private Category category;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
     private String imagepath;
+
+    @Column(nullable = false)
+    private boolean IsVerified;
 
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
