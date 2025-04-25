@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.mail.MessagingException;
 import java.util.List;
 
 @RestController
@@ -32,7 +33,8 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    public Event updateEvent(@PathVariable Long id, @RequestBody Event event) {
+    @ResponseStatus(HttpStatus.OK)
+    public Event updateEvent(@PathVariable Long id, @RequestBody Event event) throws MessagingException {
         return eventService.updateEvent(id, event);
     }
 

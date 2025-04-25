@@ -37,13 +37,13 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="config-server" options="-parameters" />
-      <module name="cours" options="-parameters" />
-      <module name="discovery" options="-parameters" />
+      <module name="config-server" options="" />
+      <module name="cours" options="" />
+      <module name="discovery" options="" />
       <module name="event" options="-parameters" />
-      <module name="gateway" options="-parameters" />
+      <module name="gateway" options="" />
       <module name="unihelp" options="-parameters" />
-      <module name="user" options="-parameters" />
+      <module name="user" options="" />
     </option>
   </component>
 </project>

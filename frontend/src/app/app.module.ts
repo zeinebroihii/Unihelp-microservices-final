@@ -9,7 +9,7 @@ import { LoginComponent } from './components/login/login.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { EventListComponent } from './components/event-list/event-list.component';
+import {EventDetailsDialogComponent, EventListComponent} from './components/event-list/event-list.component';
 import {MatCardModule} from "@angular/material/card";
 import {HttpClientModule} from "@angular/common/http";
 import {MatButtonModule} from "@angular/material/button";
@@ -23,6 +23,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatListModule} from "@angular/material/list";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import { FullCalendarModule } from '@fullcalendar/angular';
 
 @NgModule({
   declarations: [
@@ -33,8 +34,10 @@ import {MatTooltipModule} from "@angular/material/tooltip";
     LoginComponent,
     NotFoundComponent,
     EventListComponent,
+    EventDetailsDialogComponent
   ],
   imports: [
+    FullCalendarModule,
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
