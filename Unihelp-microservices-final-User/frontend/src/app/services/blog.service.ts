@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { User } from './auth.service';
-import { Comment } from './comment.service'; // Adjust the import path as necessary
+import { Comment } from './comment.service';
 
 export interface Blog {
   idBlog: number | null;
@@ -15,6 +15,8 @@ export interface Blog {
   imagepath: string;
   comments: Comment[] | null;
   isVerified: boolean;
+  isPending?: boolean; // Added for offline blogs
+  offlineId?: string; // Added for offline blog identification
 }
 
 @Injectable({
@@ -68,7 +70,7 @@ export class BlogService {
     } else {
       errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
       if (error.error && error.error.message) {
-        errorMessage += `\nDetails: ${error.error.message}`; // Include backend error details
+        errorMessage += `\nDetails: ${error.error.message}`;
       }
       if (error.status === 400) {
         errorMessage = `Bad Request: Invalid data sent to the server. ${error.error.message || ''}`;

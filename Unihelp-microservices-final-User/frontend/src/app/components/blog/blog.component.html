@@ -21,6 +21,16 @@
         (input)="onFilterChange()"
       >
     </div>
+    <!-- Sync Button -->
+    <div class="mb-3">
+      <button class="btn btn-primary" (click)="syncPendingBlogs()" [disabled]="isOffline || pendingBlogs.length === 0">
+        Sync Pending Blogs ({{ pendingBlogs.length }})
+      </button>
+    </div>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
   </div>
 </div>
 
@@ -35,19 +45,35 @@
           <ng-template #placeholder>
             <img src="https://www.bootdey.com/image/480x480/00FFFF/000000" alt="Placeholder">
           </ng-template>
+          <!-- Pending Indicator -->
+          <div *ngIf="blog.isPending" class="badge bg-warning text-dark position-absolute top-0 start-0">
+            Pending Sync
+          </div>
         </div>
         <div class="blog-grid-text p-4">
-          <h3 class="h5 mb-3"><a [routerLink]="['/blog', blog.idBlog]">{{ blog.title }} {{blog.isVerified}}</a></h3>
+          <h3 class="h5 mb-3">
+            <a [routerLink]="blog.isPending ? [] : ['/blog', blog.idBlog]">
+              {{ blog.title }} {{ blog.isVerified ? '' : '(Unverified)' }}
+            </a>
+          </h3>
           <p class="display-30">{{ blog.content | slice:0:47 }}...</p>
           <div class="meta meta-style2">
             <ul>
               <li><i class="fa fa-user"></i> {{ blog.user?.firstName || 'User' }}</li>
-              <li><i class="fa fa-comments"></i> {{ blog.comments?.length }}</li>
+              <li><i class="fa fa-comments"></i> {{ blog.comments?.length || 0 }}</li>
               <div *ngIf="isBlogDeletable(blog.userId)">
-                <li><a (click)="DeleteBlog(blog.idBlog)"><i class="fa fa-trash"></i> Delete</a></li>
+                <li>
+                  <a (click)="DeleteBlog(blog.idBlog, blog.offlineId)">
+                    <i class="fa fa-trash"></i> Delete
+                  </a>
+                </li>
               </div>
-              <div *ngIf="isBlogDeletable(blog.userId)">
-                <li><a [routerLink]="['/editblog', blog.idBlog]"><i class="fa fa-edit"></i> Edit</a></li>
+              <div *ngIf="isBlogDeletable(blog.userId) && !blog.isPending">
+                <li>
+                  <a [routerLink]="['/editblog', blog.idBlog]">
+                    <i class="fa fa-edit"></i> Edit
+                  </a>
+                </li>
               </div>
             </ul>
           </div>
