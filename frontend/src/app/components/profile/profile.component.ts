@@ -1,17 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import Swal from 'sweetalert2';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService, User } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { NlpService, NlpAnalysisResult } from '../../services/nlp.service';
+import { MessageService } from '../../services/message.service';
+import { NotificationService } from '../../services/notification.service';
+import { FriendshipService } from '../../services/friendship.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css'],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   user: User | null = null;
   profileForm: FormGroup;
   isEditing = false;
@@ -23,12 +27,30 @@ export class ProfileComponent implements OnInit {
   showBioAnalysis = false;
   nlpAnalysisResult: NlpAnalysisResult | null = null;
   isAnalysisLoading = false;
+  
+  // Communication counters
+  unreadMessagesCount: number = 0;
+  unreadNotificationsCount: number = 0;
+  pendingFriendRequestsCount: number = 0;
+  private subscriptions: Subscription[] = [];
+  
+  // Messages related properties
+  conversations: any[] = [];
+  isLoadingConversations: boolean = false;
+  currentConversationUserId: number | null = null;
+  
+  // Feature management
+  activeFeature: string | null = null;
+  activeFriendTab: string = 'friends'; // Default to friends tab
 
   constructor(
     private authService: AuthService, 
     private fb: FormBuilder, 
     private router: Router,
-    private nlpService: NlpService
+    private nlpService: NlpService,
+    private messageService: MessageService,
+    private notificationService: NotificationService,
+    private friendshipService: FriendshipService
   ) {
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required]],
@@ -41,6 +63,47 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserProfile();
+    this.loadCommunicationCounts();
+  }
+  
+  // Subscribe to unread counts
+  // Subscribe to unread counts
+  loadCommunicationCounts(): void {
+    // Get unread messages count
+    const msgSubscription = this.messageService.getUnreadCount().subscribe(response => {
+      this.unreadMessagesCount = response.count;
+    });
+    this.subscriptions.push(msgSubscription);
+    
+    // Subscribe to new messages
+    const newMsgSubscription = this.messageService.onNewMessages().subscribe(message => {
+      // If this is from our current conversation, add it to the list
+      if (this.currentConversationUserId === message.senderId) {
+        // Add message to active conversation when implemented
+      }
+      // Update conversation list if needed
+      this.updateConversationWithNewMessage(message);
+      // Update unread count
+      this.unreadMessagesCount++;
+    });
+    this.subscriptions.push(newMsgSubscription);
+    
+    // Get unread notifications count
+    const notifSubscription = this.notificationService.getUnreadCount().subscribe(response => {
+      this.unreadNotificationsCount = response.count;
+    });
+    this.subscriptions.push(notifSubscription);
+    
+    // Get pending friend requests count
+    const friendSubscription = this.friendshipService.getPendingRequestsCount().subscribe(response => {
+      this.pendingFriendRequestsCount = response.count;
+    });
+    this.subscriptions.push(friendSubscription);
+    
+    // Connect to message websocket if we have a user ID
+    if (this.user?.id) {
+      this.messageService.connect(this.user.id);
+    }
   }
 
   loadUserProfile(): void {
@@ -188,10 +251,23 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  getProfileImageUrl(): string {
-    return this.user?.profileImage
-      ? `data:image/jpeg;base64,${this.user.profileImage}`
-      : 'assets/default-profile.png';
+  getProfileImageUrl(profileImage?: string | null): string {
+    if (!profileImage) {
+      return 'assets/img/default-user.png';
+    }
+    
+    // Check if the image is already a URL (starts with http or assets/)
+    if (profileImage.startsWith('http') || profileImage.startsWith('assets/')) {
+      return profileImage;
+    }
+    
+    // Handle base64 image data - add the data URL prefix if not already present
+    if (!profileImage.startsWith('data:')) {
+      return `data:image/jpeg;base64,${profileImage}`;
+    }
+    
+    // Image already has data URL prefix
+    return profileImage;
   }
 
   disconnect(): void {
@@ -490,6 +566,512 @@ export class ProfileComponent implements OnInit {
     }
   }
   
+  // Clean up resources when component is destroyed
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    // Disconnect from WebSocket when component is destroyed
+    this.messageService.disconnect();
+  }
+  
+  // Toggle between different features
+  toggleFeature(feature: string): void {
+    if (this.activeFeature === feature) {
+      this.activeFeature = null;
+    } else {
+      this.activeFeature = feature;
+      
+      // Load data when opening each feature
+      if (feature === 'messages') {
+        this.loadConversations();
+      } else if (feature === 'notifications') {
+        this.loadNotifications();
+        if (this.unreadNotificationsCount > 0) {
+          // Mark notifications as read - optimistic update
+          const oldCount = this.unreadNotificationsCount;
+          this.unreadNotificationsCount = 0;
+          
+          // Actual API call with error handling
+          this.notificationService.markAllAsRead().subscribe({
+            error: (error) => {
+              console.error('Error marking notifications as read:', error);
+              // Restore count if API call fails
+              this.unreadNotificationsCount = oldCount;
+            }
+          });
+        }
+      } else if (feature === 'friends') {
+        this.loadFriends();
+        this.loadFriendRequests();
+        this.loadFriendSuggestions();
+      }
+    }
+  }
+  
+  // Load conversations from the API
+  loadConversations(): void {
+    if (!this.user) return;
+    
+    this.isLoadingConversations = true;
+    
+    this.messageService.getConversations().subscribe({
+      next: (data) => {
+        // Process conversation data and include additional info
+        this.conversations = this.processConversationData(data);
+        this.isLoadingConversations = false;
+      },
+      error: (error) => {
+        console.error('Error loading conversations:', error);
+        this.isLoadingConversations = false;
+        
+        // Load fallback data for demo if needed
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackConversations();
+        }
+      }
+    });
+  }
+  
+  // Process conversation data from API
+  processConversationData(data: any[]): any[] {
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    // Map API data to our conversation model
+    return data.map(conv => {
+      return {
+        userId: conv.userId,
+        firstName: conv.firstName,
+        lastName: conv.lastName,
+        profileImage: conv.profileImage || 'assets/img/default-user.png',
+        lastMessage: conv.lastMessage || 'No messages yet',
+        lastMessageTime: new Date(conv.lastMessageTime || Date.now()),
+        unreadCount: conv.unreadCount || 0,
+        online: conv.online || Math.random() > 0.5 // Random for demo
+      };
+    }).sort((a, b) => 
+      b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+  }
+  
+  // Load fallback conversation data for demo
+  loadFallbackConversations(): void {
+    // Create some sample data for the UI
+    const names = ['Alex Johnson', 'Taylor Smith', 'Jordan Lee', 'Casey Morgan', 'Riley Wilson'];
+    const messages = [
+      'Thanks for your help with the project!',
+      'When is our next meeting?',
+      'Did you get my notes from class?',
+      'The assignment is due tomorrow!',
+      'Are you going to the study group?'
+    ];
+    
+    this.conversations = names.map((name, i) => {
+      const [firstName, lastName] = name.split(' ');
+      return {
+        userId: 100 + i,
+        firstName,
+        lastName,
+        profileImage: `assets/img/default-user.png`,
+        lastMessage: messages[i],
+        lastMessageTime: new Date(Date.now() - (i * 3600000)), // hours ago
+        unreadCount: i === 1 || i === 3 ? i : 0,
+        online: i % 2 === 0
+      };
+    });
+  }
+  
+  // Update conversation with new message
+  updateConversationWithNewMessage(message: any): void {
+    if (!message || !this.user) return;
+    
+    // Check if conversation exists
+    const senderId = message.senderId;
+    const isCurrentUser = senderId === this.user.id;
+    const otherUserId = isCurrentUser ? message.recipientId : senderId;
+    
+    const existingConvIndex = this.conversations.findIndex(c => c.userId === otherUserId);
+    
+    if (existingConvIndex > -1) {
+      // Update existing conversation
+      const updatedConv = {...this.conversations[existingConvIndex]};
+      updatedConv.lastMessage = message.content;
+      updatedConv.lastMessageTime = new Date(message.timestamp || Date.now());
+      
+      if (!isCurrentUser) {
+        updatedConv.unreadCount = (updatedConv.unreadCount || 0) + 1;
+      }
+      
+      // Create a new array with the updated conversation at the top
+      const newConversations = [...this.conversations];
+      newConversations.splice(existingConvIndex, 1);
+      newConversations.unshift(updatedConv);
+      this.conversations = newConversations;
+    } else if (!isCurrentUser) {
+      // New conversation from another user
+      this.messageService.getUserById(senderId).subscribe({
+        next: (userData) => {
+          // Add new conversation at the top
+          const newConversation = {
+            userId: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            profileImage: userData.profileImage || 'assets/img/user-placeholder.jpg',
+            lastMessage: message.content,
+            lastMessageTime: new Date(message.timestamp || Date.now()),
+            unreadCount: 1,
+            online: true
+          };
+          
+          this.conversations = [newConversation, ...this.conversations];
+        },
+        error: (error) => {
+          console.error('Error fetching user details:', error);
+        }
+      });
+    }
+  }
+  
+  // Open a specific conversation
+  openConversation(userId: number): void {
+    if (!userId || !this.user) return;
+    
+    this.currentConversationUserId = userId;
+    
+    // Find the conversation and mark it as read (optimistic UI update)
+    const convIndex = this.conversations.findIndex(c => c.userId === userId);
+    if (convIndex > -1 && this.conversations[convIndex].unreadCount > 0) {
+      // Update UI immediately
+      const updatedConversations = [...this.conversations];
+      updatedConversations[convIndex] = {
+        ...updatedConversations[convIndex],
+        unreadCount: 0
+      };
+      this.conversations = updatedConversations;
+      
+      // Call API to mark conversation as read
+      this.messageService.markConversationAsRead(userId).subscribe({
+        next: () => {
+          console.log('Conversation marked as read');
+        },
+        error: (error) => {
+          console.error('Error marking conversation as read:', error);
+        }
+      });
+    }
+    
+    // For now just show a notification
+    Swal.fire({
+      title: 'Opening Conversation',
+      text: `Opening conversation with ${this.conversations[convIndex]?.firstName} ${this.conversations[convIndex]?.lastName}`,
+      icon: 'info',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000
+    });
+  }
+  
+  // Notifications section
+  notifications: any[] = [];
+  isLoadingNotifications: boolean = false;
+  
+  loadNotifications(): void {
+    if (!this.user) return;
+    
+    this.isLoadingNotifications = true;
+    
+    this.notificationService.getNotifications().subscribe({
+      next: (data) => {
+        this.notifications = data;
+        this.isLoadingNotifications = false;
+      },
+      error: (error) => {
+        console.error('Error loading notifications:', error);
+        this.isLoadingNotifications = false;
+        
+        // Load fallback data for demo
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackNotifications();
+        }
+      }
+    });
+  }
+  
+  loadFallbackNotifications(): void {
+    const types = ['like', 'comment', 'friend', 'system', 'event'];
+    const messages = [
+      'Someone liked your post',
+      'New comment on your discussion',
+      'New friend request from Taylor',
+      'System maintenance scheduled',
+      'Upcoming event: Study group'
+    ];
+    
+    this.notifications = Array(5).fill(0).map((_, i) => ({
+      id: i + 1,
+      type: types[i],
+      message: messages[i],
+      timestamp: new Date(Date.now() - (i * 3600000 * 2)),
+      read: i > 2
+    }));
+  }
+  
+  markNotificationAsRead(notificationId: number): void {
+    // Find notification and update locally first (optimistic UI)
+    const notifIndex = this.notifications.findIndex(n => n.id === notificationId);
+    if (notifIndex > -1) {
+      const updatedNotifications = [...this.notifications];
+      updatedNotifications[notifIndex] = {
+        ...updatedNotifications[notifIndex],
+        read: true
+      };
+      this.notifications = updatedNotifications;
+      
+      // API call to mark as read
+      this.notificationService.markAsRead(notificationId).subscribe({
+        error: (error) => {
+          console.error('Error marking notification as read:', error);
+          // Revert optimistic update if API fails
+          this.notifications[notifIndex].read = false;
+        }
+      });
+    }
+  }
+  
+  deleteNotification(notificationId: number): void {
+    // Remove notification from UI immediately (optimistic UI)
+    this.notifications = this.notifications.filter(n => n.id !== notificationId);
+    
+    // API call to delete
+    this.notificationService.deleteNotification(notificationId).subscribe({
+      error: (error) => {
+        console.error('Error deleting notification:', error);
+        // Reload notifications if API fails
+        this.loadNotifications();
+      }
+    });
+  }
+  
+  // Friends section
+  friends: any[] = [];
+  friendRequests: any[] = [];
+  friendSuggestions: any[] = [];
+  isLoadingFriends: boolean = false;
+  isLoadingRequests: boolean = false;
+  isLoadingSuggestions: boolean = false;
+  
+  loadFriends(): void {
+    if (!this.user) return;
+    
+    this.isLoadingFriends = true;
+    
+    this.friendshipService.getFriends().subscribe({
+      next: (data) => {
+        this.friends = data;
+        this.isLoadingFriends = false;
+      },
+      error: (error) => {
+        console.error('Error loading friends:', error);
+        this.isLoadingFriends = false;
+        
+        // Load fallback data for demo
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackFriends();
+        }
+      }
+    });
+  }
+  
+  loadFriendRequests(): void {
+    if (!this.user) return;
+    
+    this.isLoadingRequests = true;
+    
+    this.friendshipService.getPendingFriendRequests().subscribe({
+      next: (data) => {
+        this.friendRequests = data;
+        this.isLoadingRequests = false;
+      },
+      error: (error) => {
+        console.error('Error loading friend requests:', error);
+        this.isLoadingRequests = false;
+        
+        // Load fallback data for demo
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackFriendRequests();
+        }
+      }
+    });
+  }
+  
+  loadFriendSuggestions(): void {
+    if (!this.user) return;
+    
+    this.isLoadingSuggestions = true;
+    
+    this.friendshipService.getFriendSuggestions().subscribe({
+      next: (data) => {
+        this.friendSuggestions = data;
+        this.isLoadingSuggestions = false;
+      },
+      error: (error) => {
+        console.error('Error loading friend suggestions:', error);
+        this.isLoadingSuggestions = false;
+        
+        // Load fallback data for demo
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackFriendSuggestions();
+        }
+      }
+    });
+  }
+  
+  loadFallbackFriends(): void {
+    this.friends = Array(5).fill(0).map((_, i) => ({
+      id: i + 1,
+      firstName: ['Alex', 'Taylor', 'Jordan', 'Casey', 'Riley'][i],
+      lastName: ['Johnson', 'Smith', 'Lee', 'Morgan', 'Wilson'][i],
+      email: `friend${i+1}@example.com`,
+      profileImage: 'assets/img/default-user.png',
+      online: i % 2 === 0
+    }));
+  }
+  
+  loadFallbackFriendRequests(): void {
+    this.friendRequests = Array(3).fill(0).map((_, i) => ({
+      id: i + 100,
+      userId: i + 10,
+      firstName: ['Jamie', 'Morgan', 'Avery'][i],
+      lastName: ['Lopez', 'Chen', 'Roberts'][i],
+      profileImage: 'assets/img/default-user.png',
+      requestDate: new Date(Date.now() - (i * 86400000)), // days ago
+      mutualFriends: i * 2
+    }));
+  }
+  
+  loadFallbackFriendSuggestions(): void {
+    this.friendSuggestions = Array(4).fill(0).map((_, i) => ({
+      id: i + 20,
+      firstName: ['Quinn', 'Harper', 'Rowan', 'Blake'][i],
+      lastName: ['Miller', 'Taylor', 'Garcia', 'Thomas'][i],
+      email: `suggestion${i+1}@example.com`,
+      profileImage: 'assets/img/default-user.png',
+      mutualFriends: i + 1,
+      department: ['Computer Science', 'Engineering', 'Business', 'Math'][i]
+    }));
+  }
+  
+  // Friend request actions
+  acceptFriendRequest(requestId: number): void {
+    // Optimistic UI update
+    const request = this.friendRequests.find(r => r.id === requestId);
+    if (request) {
+      // Remove from requests list
+      this.friendRequests = this.friendRequests.filter(r => r.id !== requestId);
+      
+      // Add to friends list
+      this.friends.unshift({
+        id: request.userId,
+        firstName: request.firstName,
+        lastName: request.lastName,
+        profileImage: request.profileImage,
+        online: true
+      });
+      
+      // Decrease pending requests count
+      if (this.pendingFriendRequestsCount > 0) {
+        this.pendingFriendRequestsCount--;
+      }
+      
+      // API call
+      this.friendshipService.acceptFriendRequest(requestId).subscribe({
+        error: (error) => {
+          console.error('Error accepting friend request:', error);
+          // Revert changes if API fails
+          this.loadFriendRequests();
+          this.loadFriends();
+        }
+      });
+    }
+  }
+  
+  declineFriendRequest(requestId: number): void {
+    // Optimistic UI update
+    this.friendRequests = this.friendRequests.filter(r => r.id !== requestId);
+    
+    // Decrease pending requests count
+    if (this.pendingFriendRequestsCount > 0) {
+      this.pendingFriendRequestsCount--;
+    }
+    
+    // API call
+    this.friendshipService.declineFriendRequest(requestId).subscribe({
+      error: (error) => {
+        console.error('Error declining friend request:', error);
+        // Revert changes if API fails
+        this.loadFriendRequests();
+      }
+    });
+  }
+  
+  sendFriendRequest(userId: number): void {
+    // Find user in suggestions
+    const suggestion = this.friendSuggestions.find(s => s.id === userId);
+    if (suggestion) {
+      // Remove from suggestions list (optimistic UI)
+      this.friendSuggestions = this.friendSuggestions.filter(s => s.id !== userId);
+      
+      // Show success message
+      Swal.fire({
+        icon: 'success',
+        title: 'Friend Request Sent',
+        text: `Friend request sent to ${suggestion.firstName} ${suggestion.lastName}`,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
+      });
+      
+      // API call
+      this.friendshipService.sendFriendRequest(userId).subscribe({
+        error: (error) => {
+          console.error('Error sending friend request:', error);
+          // Revert changes if API fails
+          this.loadFriendSuggestions();
+        }
+      });
+    }
+  }
+  
+  removeFriend(friendId: number): void {
+    // Confirm with user
+    Swal.fire({
+      title: 'Remove Friend',
+      text: 'Are you sure you want to remove this friend?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, remove',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Optimistic UI update
+        this.friends = this.friends.filter(f => f.id !== friendId);
+        
+        // API call - assuming we need to get the friendship ID first
+        // In a real app, you might store the friendship ID in the friends list
+        // or have an API endpoint that accepts user IDs
+        this.friendshipService.removeFriend(friendId).subscribe({
+          error: (error) => {
+            console.error('Error removing friend:', error);
+            // Revert changes if API fails
+            this.loadFriends();
+          }
+        });
+      }
+    });
+  }
+  
   // Add a single interest to the user's profile
   addInterestToProfile(interest: string): void {
     if (!this.user) {
@@ -500,7 +1082,7 @@ export class ProfileComponent implements OnInit {
     console.log('Adding interest to profile:', interest);
     
     // Get current skills as array
-    const currentSkills = this.user.skills ? 
+    const currentSkills = this.user?.skills ? 
       this.user.skills.split(',').map(s => s.trim()).filter(s => s !== '') : 
       [];
     
@@ -538,14 +1120,16 @@ export class ProfileComponent implements OnInit {
     // Otherwise update the user object directly
     else {
       // Create a shallow copy of the user object with updated skills
-      const updatedUser: User = { 
+      // Type assertion to ensure id is present (we've already checked this.user exists)
+      const updatedUser = { 
         ...this.user, 
         skills: updatedSkills 
-      };
+      } as User;
       
       console.log('Updating user profile with new interest:', updatedSkills);
       
       // First, update the local user object optimistically
+      // This implements the optimistic UI pattern mentioned in the memories
       this.user.skills = updatedSkills;
       this.updateSkillsDisplay();
       
@@ -570,6 +1154,7 @@ export class ProfileComponent implements OnInit {
           console.error('Error updating interests:', error);
           
           // Check if the error has a success status code
+          // This handles the issue mentioned in memories where updates succeed but show errors
           if (error.status >= 200 && error.status < 300) {
             console.log('Treating error as success based on status code:', error.status);
             // This is likely a successful update despite being reported as an error

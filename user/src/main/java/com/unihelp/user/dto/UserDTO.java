@@ -7,16 +7,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-    @Builder.Default
-    private String token = "";
-    @Builder.Default
-    private String type = "Bearer";
+@AllArgsConstructor
+public class UserDTO {
     private Long id;
+    private String firstName;
+    private String lastName;
     private String email;
+    private String bio;
+    private String skills;
+    private String profileImage;
     private String role;
-    private boolean profileCompleted;
-    private boolean newUser;
 }

@@ -17,6 +17,41 @@ spring:
             uri: lb://USER
             predicates:
               - Path=/api/nlp/**
+
+          - id: r4
+            uri: lb://USER
+            predicates:
+              - Path=/api/messages/**
+
+          - id: r5
+            uri: lb://USER
+            predicates:
+              - Path=/api/friends/**
+              
+          - id: r6
+            uri: lb://USER
+            predicates:
+              - Path=/api/notifications/**
+              
+          - id: r6a
+            uri: lb://USER
+            predicates:
+              - Path=/api/friendships/**
+              
+          - id: r7
+            uri: lb://USER
+            predicates:
+              - Path=/api/skill-matching/**
+              
+          - id: r8
+            uri: lb://USER
+            predicates:
+              - Path=/api/users/**
+              
+          - id: r9
+            uri: lb://USER
+            predicates:
+              - Path=/ws/**
   application:
     name: gateway-service
 server:

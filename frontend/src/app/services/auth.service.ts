@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import {Observable, of, throwError} from 'rxjs';
 import { FingerprintService } from './fingerprint.service';
 import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 declare const google: any;
 
 interface LoginRequest {
@@ -45,7 +46,7 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8888/USER/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
 
   constructor(private http: HttpClient, private fingerprintService: FingerprintService) {}
 
@@ -271,6 +272,15 @@ export class AuthService {
     return this.http
       .get<User>(`${this.apiUrl}/profile`)
       .pipe(catchError(this.handleError));
+  }
+  
+  // Get current user from local storage or fetch it from server if needed
+  getUser(): Observable<User> {
+    const user = localStorage.getItem('user');
+    if (user) {
+      return of(JSON.parse(user) as User);
+    }
+    return this.getCurrentUserProfile();
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

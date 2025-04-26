@@ -2,6 +2,7 @@ package com.unihelp.user.entities;
 
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,8 +12,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -54,7 +57,8 @@ public class User implements UserDetails {
     private byte[] profileImage;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Builder.Default
+    private UserRole role = UserRole.STUDENT;
 
     @Builder.Default
     private boolean isActive = true;
@@ -64,30 +68,63 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @Builder.Default
     private List<UserActivity> activities = new ArrayList<>();
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @Builder.Default
     private List<Token> tokens = new ArrayList<>();
     
     // NLP analysis results
     @ElementCollection
     @CollectionTable(name = "user_extracted_skills", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "skill")
+    @Builder.Default
     private List<String> extractedSkills = new ArrayList<>();
     
     @ElementCollection
     @CollectionTable(name = "user_extracted_interests", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "interest")
+    @Builder.Default
     private List<String> extractedInterests = new ArrayList<>();
     
     @ElementCollection
     @CollectionTable(name = "user_personality_traits", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "trait")
     @Column(name = "score")
+    @Builder.Default
     private Map<String, Double> personalityTraits = new HashMap<>();
     
     private String dominantTrait;
+    
+    // Friendship relationships
+    @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Friendship> sentFriendRequests = new HashSet<>();
+    
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Friendship> receivedFriendRequests = new HashSet<>();
+    
+    // Message relationships
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Message> sentMessages = new HashSet<>();
+    
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Message> receivedMessages = new HashSet<>();
+    
+    // Notification relationship
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Notification> notifications = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

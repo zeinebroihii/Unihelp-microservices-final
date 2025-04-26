@@ -23,6 +23,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { ResetPasswordModalComponent } from './components/reset-password-modal/reset-password-modal.component';
 import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
 import { BioAnalysisComponent } from './components/bio-analysis/bio-analysis.component';
+import { MessagingModule } from './messaging.module';
 
 
 @NgModule({
@@ -44,14 +45,21 @@ import { BioAnalysisComponent } from './components/bio-analysis/bio-analysis.com
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
     HttpClientModule,
     BrowserAnimationsModule,
     MatFormFieldModule,
     MatChipsModule,
     MatIconModule,
     MatInputModule,
+    MessagingModule,
   ],
-  providers: [AuthService, AuthGuard],
+  providers: [
+    AuthService, 
+    AuthGuard,
+    { provide: 'Window', useValue: window }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

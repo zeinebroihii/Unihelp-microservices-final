@@ -8,6 +8,9 @@ import {ProfileComponent} from "./components/profile/profile.component";
 import {AuthGuard} from "./auth.guard";
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
+import { FriendsComponent } from './components/friends/friends.component';
+import { MessagingComponent } from './components/messaging/messaging.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
 
 const routes: Routes = [
   {path:'',component:HomeComponent},
@@ -17,6 +20,10 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'complete-profile', component: ProfileCompletionComponent, canActivate: [AuthGuard] },
+  { path: 'friends', component: FriendsComponent, canActivate: [AuthGuard] },
+  { path: 'messages', component: MessagingComponent, canActivate: [AuthGuard] },
+  { path: 'messages/:id', component: MessagingComponent, canActivate: [AuthGuard] },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', component: NotFoundComponent } // Wildcard route for 404
 ];
