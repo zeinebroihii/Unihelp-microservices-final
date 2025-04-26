@@ -22,6 +22,7 @@ import {AuthService} from "./services/auth.service";
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ResetPasswordModalComponent } from './components/reset-password-modal/reset-password-modal.component';
 import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
+import { BioAnalysisComponent } from './components/bio-analysis/bio-analysis.component';
 
 
 @NgModule({
@@ -37,6 +38,7 @@ import { ProfileCompletionComponent } from './components/profile-completion/prof
     ResetPasswordComponent,
     ResetPasswordModalComponent,
     ProfileCompletionComponent,
+    BioAnalysisComponent,
   ],
   imports: [
     BrowserModule,

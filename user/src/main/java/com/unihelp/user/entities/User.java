@@ -10,7 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -67,6 +69,25 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Token> tokens = new ArrayList<>();
+    
+    // NLP analysis results
+    @ElementCollection
+    @CollectionTable(name = "user_extracted_skills", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "skill")
+    private List<String> extractedSkills = new ArrayList<>();
+    
+    @ElementCollection
+    @CollectionTable(name = "user_extracted_interests", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "interest")
+    private List<String> extractedInterests = new ArrayList<>();
+    
+    @ElementCollection
+    @CollectionTable(name = "user_personality_traits", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "trait")
+    @Column(name = "score")
+    private Map<String, Double> personalityTraits = new HashMap<>();
+    
+    private String dominantTrait;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

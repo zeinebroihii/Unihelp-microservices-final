@@ -125,6 +125,52 @@
   letter-spacing: 0.02em;
 }
 
+.modern-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modern-edit-btn {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(66, 153, 225, 0.3);
+  flex: 1;
+}
+
+.modern-edit-btn:hover {
+  background: #3182ce;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+}
+
+.modern-analyze-btn {
+  background: #805ad5;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(128, 90, 213, 0.3);
+  flex: 1;
+}
+
+.modern-analyze-btn:hover {
+  background: #6b46c1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(128, 90, 213, 0.4);
+}
+
 .modern-edit-btn {
   display: block;
   width: 100%;
@@ -464,4 +510,29 @@
   .action-btn {
     margin-top: 10px;
   }
+}
+
+/* Bio Analysis Integration Styles */
+.bio-analysis-wrapper {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.analysis-title {
+  color: #4a5568;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* When bio analysis section is shown, make the card wider */
+.modern-profile-card:has(.bio-analysis-wrapper) {
+  max-width: 700px;
+  transition: max-width 0.3s ease-in-out;
 }

@@ -26,7 +26,29 @@
             <span class="modern-skill-tag">{{ skill }}</span>
           </ng-container>
         </div>
-        <button (click)="toggleEdit()" class="modern-edit-btn">Edit Profile</button>
+        <div class="modern-action-buttons">
+          <button (click)="toggleEdit()" class="modern-edit-btn">Edit Profile</button>
+          <button (click)="toggleBioAnalysis()" class="modern-analyze-btn">
+            {{ showBioAnalysis ? 'Hide Analysis' : 'Analyze My Bio' }}
+          </button>
+        </div>
+        <div *ngIf="showBioAnalysis" class="bio-analysis-wrapper mt-4">
+          <h4 class="analysis-title">Bio Analysis</h4>
+          <div *ngIf="isAnalysisLoading" class="text-center p-3">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing your bio...</p>
+          </div>
+          <app-bio-analysis 
+            *ngIf="!isAnalysisLoading" 
+            [userId]="user.id" 
+            [bio]="user.bio || ''" 
+            (analysisComplete)="onAnalysisComplete($event)"
+            (addSkill)="addSkillToProfile($event)"
+            (addInterest)="addInterestToProfile($event)">
+          </app-bio-analysis>
+        </div>
       </div>
       <form *ngIf="isEditing" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
         <div class="form-group">
