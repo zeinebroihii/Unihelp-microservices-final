@@ -1,4 +1,4 @@
-<!-- Notifications Component -->
+<!-- Notifications Component - Facebook Like -->
 <div class="notifications-container">
   <div class="notifications-header">
     <h2>Notifications</h2>
@@ -22,37 +22,35 @@
 
   <!-- Notifications list -->
   <div *ngIf="!isLoading && notifications.length > 0" class="notifications-list">
-    <div 
-      *ngFor="let notification of notifications" 
-      class="notification-item" 
-      [class.unread]="!notification.read"
-      (click)="handleNotificationClick(notification)"
-    >
-      <!-- Notification icon based on type -->
-      <div class="notification-icon" [ngClass]="notification.type.toLowerCase()">
-        <i *ngIf="notification.type === 'FRIEND_REQUEST'" class="fas fa-user-plus"></i>
-        <i *ngIf="notification.type === 'FRIEND_ACCEPTED'" class="fas fa-user-check"></i>
-        <i *ngIf="notification.type === 'MESSAGE'" class="fas fa-comment"></i>
-        <i *ngIf="notification.type === 'SYSTEM'" class="fas fa-info-circle"></i>
+    <div *ngFor="let notification of notifications"
+         class="notification-item"
+         [class.unread]="!notification.read"
+         (click)="handleNotificationClick(notification)">
+
+      <!-- Avatar -->
+      <div class="notification-avatar">
+        <img [src]="getProfileImageUrl(notification.userProfileImage)" alt="User photo">
       </div>
 
-      <!-- Notification content -->
-      <div class="notification-content">
-        <p>{{notification.content}}</p>
-        <span class="notification-time">{{formatDate(notification.createdAt)}}</span>
+      <!-- Main content -->
+      <div class="notification-main-content">
+        <div class="notification-text-wrapper">
+          <span class="notification-name">{{ notification.userName || 'Unknown User' }}</span>
+          <span class="notification-message">{{ notification.content }}</span>
+        </div>
+        <span class="notification-time">{{ notification.createdAt ? formatDate(notification.createdAt) : 'Just now' }}</span>
       </div>
 
       <!-- Delete button -->
       <button class="delete-btn" (click)="deleteNotification(notification, $event)">
         <i class="fas fa-times"></i>
       </button>
+
     </div>
 
     <!-- Load more button -->
     <div *ngIf="hasMoreNotifications && !loadingMore" class="load-more">
-      <button (click)="loadMoreNotifications()">
-        Load more notifications
-      </button>
+      <button (click)="loadMoreNotifications()">Load more notifications</button>
     </div>
 
     <!-- Loading more indicator -->

@@ -3,14 +3,17 @@ package com.unihelp.user.entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -20,11 +23,13 @@ public class Message {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = true) 
+    @JsonBackReference
     private User sender;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id", nullable = false)
+    @JoinColumn(name = "recipient_id", nullable = true) 
+    @JsonBackReference
     private User recipient;
     
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -33,7 +38,7 @@ public class Message {
     @Column(nullable = false)
     private LocalDateTime sentAt;
     
-    @Column(nullable = false)
+    @Column(name = "`read`", nullable = false)
     @Builder.Default
     private boolean read = false;
     
@@ -42,7 +47,7 @@ public class Message {
         sentAt = LocalDateTime.now();
     }
     
-    // Custom equals and hashCode methods to avoid circular references
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -55,5 +60,15 @@ public class Message {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+    
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", sentAt=" + sentAt +
+                ", read=" + read +
+                '}';  // Avoid including sender/recipient to prevent circular references
     }
 }

@@ -33,18 +33,18 @@
         [class.active]="getOtherUser(conversation).id === recipientId"
         (click)="selectConversation(conversation)"
       >
-        <div class="avatar" [style.background-image]="'url(' + (getOtherUser(conversation).profileImage || 'assets/default-avatar.png') + ')'"></div>
+        <div class="avatar" [style.background-image]="'url(' + getProfileImageForUser(getOtherUser(conversation)) + ')'"></div>
         <div class="conversation-preview">
           <div class="conversation-header">
             <h4>{{getOtherUser(conversation).firstName}} {{getOtherUser(conversation).lastName}}</h4>
             <span class="time">{{formatDate(conversation.sentAt)}}</span>
           </div>
-          <p class="last-message" [class.unread]="!conversation.read && conversation.sender.id !== currentUser.id">
-            <span *ngIf="conversation.sender.id === currentUser.id">You: </span>
+          <p class="last-message" [class.unread]="!conversation.read && currentUser && conversation.sender.id !== currentUser.id">
+            <span *ngIf="currentUser && conversation.sender.id === currentUser.id">You: </span>
             {{conversation.content | slice:0:30}}{{(conversation.content.length || 0) > 30 ? '...' : ''}}
           </p>
         </div>
-        <div *ngIf="!conversation.read && conversation.sender.id !== currentUser.id" class="unread-indicator"></div>
+        <div *ngIf="!conversation.read && currentUser && conversation.sender.id !== currentUser.id" class="unread-indicator"></div>
       </div>
     </div>
   </div>
@@ -54,7 +54,7 @@
     <!-- Chat header with recipient info -->
     <div *ngIf="recipient" class="chat-header">
       <div class="recipient-info">
-        <div class="avatar" [style.background-image]="'url(' + (recipient.profileImage || 'assets/default-avatar.png') + ')'"></div>
+        <div class="avatar" [style.background-image]="'url(' + getProfileImageForUser(recipient) + ')'"></div>
         <div class="recipient-details">
           <h4>{{recipient.firstName}} {{recipient.lastName}}</h4>
           <p *ngIf="recipient.skills">{{recipient.skills | slice:0:40}}{{(recipient.skills.length || 0) > 40 ? '...' : ''}}</p>
@@ -114,13 +114,13 @@
       <div *ngFor="let msg of currentConversation" class="message-wrapper">
         <div 
           class="message-bubble" 
-          [class.sent]="msg.sender.id === currentUser.id" 
-          [class.received]="msg.sender.id !== currentUser.id"
+          [class.sent]="currentUser && msg.sender.id === currentUser.id" 
+          [class.received]="currentUser && msg.sender.id !== currentUser.id"
         >
           <div class="message-content">{{msg.content}}</div>
           <div class="message-info">
             <span class="message-time">{{formatDate(msg.sentAt)}}</span>
-            <span *ngIf="msg.sender.id === currentUser.id" class="read-status">
+            <span *ngIf="currentUser && msg.sender.id === currentUser.id" class="read-status">
               <i *ngIf="msg.read" class="fas fa-check-double" title="Read"></i>
               <i *ngIf="!msg.read" class="fas fa-check" title="Sent"></i>
             </span>

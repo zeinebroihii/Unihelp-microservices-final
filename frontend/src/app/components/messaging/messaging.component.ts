@@ -2,9 +2,8 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked }
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from '../../services/message.service';
 import { FriendshipService } from '../../services/friendship.service';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, User } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
-import { User } from '../../models/user.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,7 +15,7 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
   @ViewChild('messageInput') private messageInput!: ElementRef;
 
-  currentUser: any;
+  currentUser: User | null = null;
   recipientId: number = 0;
   recipient: User | null = null;
   conversations: any[] = [];
@@ -44,8 +43,8 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnInit(): void {
     // Get current user
-    this.authService.getUser().subscribe({
-      next: (user: any) => {
+    this.authService.getCurrentUserProfile().subscribe({
+      next: (user: User) => {
         this.currentUser = user;
         
         // Connect to WebSocket for real-time messaging
@@ -206,9 +205,8 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Send a message
   sendMessage(): void {
-    if (!this.message.trim() || !this.recipientId) return;
-
-    // Use WebSocket for sending messages (real-time)
+    if (!this.message.trim() || !this.recipientId || !this.currentUser) return;
+    
     this.messageService.sendMessageViaWebSocket(
       this.currentUser.id,
       this.recipientId,
@@ -220,7 +218,9 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
     
     // Focus on the input field
     setTimeout(() => {
-      this.messageInput.nativeElement.focus();
+      if (this.messageInput) {
+        this.messageInput.nativeElement.focus();
+      }
     });
   }
 
@@ -228,8 +228,8 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
   handleNewMessage(message: any): void {
     // If message is from or to the current conversation
     if (
-      (message.sender.id === this.recipientId && message.recipient.id === this.currentUser.id) ||
-      (message.sender.id === this.currentUser.id && message.recipient.id === this.recipientId)
+      (message.sender.id === this.recipientId && message.recipient.id === this.currentUser?.id) ||
+      (message.sender.id === this.currentUser?.id && message.recipient.id === this.recipientId)
     ) {
       // Add message to current conversation
       this.currentConversation.push(message);
@@ -291,6 +291,8 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Select a conversation
   selectConversation(conversation: any): void {
+    if (!this.currentUser) return;
+    
     const otherUser = conversation.sender.id === this.currentUser.id ? 
       conversation.recipient : conversation.sender;
     
@@ -327,6 +329,11 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Filter conversations based on search term
   filterConversations(): void {
+    if (!this.currentUser) {
+      this.filteredConversations = [];
+      return;
+    }
+    
     if (!this.searchTerm.trim()) {
       this.filteredConversations = [...this.conversations];
       return;
@@ -334,7 +341,7 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     const term = this.searchTerm.toLowerCase().trim();
     this.filteredConversations = this.conversations.filter(conv => {
-      const otherUser = conv.sender.id === this.currentUser.id ? conv.recipient : conv.sender;
+      const otherUser = conv.sender.id === this.currentUser!.id ? conv.recipient : conv.sender;
       return (
         otherUser.firstName.toLowerCase().includes(term) || 
         otherUser.lastName.toLowerCase().includes(term)
@@ -349,6 +356,8 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // Get the other user in a conversation
   getOtherUser(conversation: any): any {
+    if (!this.currentUser) return null;
+    
     return conversation.sender.id === this.currentUser.id ? 
       conversation.recipient : conversation.sender;
   }
@@ -367,5 +376,29 @@ export class MessagingComponent implements OnInit, OnDestroy, AfterViewChecked {
     } else {
       return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
+  }
+  
+  // Get profile image URL for a user with optimistic update approach
+  getProfileImageForUser(user: any): string {
+    if (!user) return 'assets/img/default-avatar.png';
+    
+    if (user.profileImage) {
+      const profileImage = user.profileImage;
+      
+      // Check if it's already a URL (starts with http or assets/)
+      if (profileImage.startsWith('http') || profileImage.startsWith('assets/')) {
+        return profileImage;
+      }
+      
+      // Handle base64 image data - add the data URL prefix if not already present
+      if (!profileImage.startsWith('data:')) {
+        return `data:image/jpeg;base64,${profileImage}`;
+      }
+      
+      // Image already has data URL prefix
+      return profileImage;
+    }
+    
+    return 'assets/img/default-avatar.png';
   }
 }

@@ -4,6 +4,7 @@ import { SkillMatchingService } from '../../services/skill-matching.service';
 import { User } from '../../models/user.model';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { MessageService } from '../../services/message.service';
 
 @Component({
   selector: 'app-friends',
@@ -22,7 +23,8 @@ export class FriendsComponent implements OnInit {
   constructor(
     private friendshipService: FriendshipService,
     private skillMatchingService: SkillMatchingService,
-    private router: Router
+    private router: Router,
+    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -37,6 +39,7 @@ export class FriendsComponent implements OnInit {
     this.isLoading = true;
     this.friendshipService.getFriends().subscribe({
       next: (data) => {
+        console.log('Friends data received:', data);
         this.friends = data;
         this.isLoading = false;
       },
@@ -97,6 +100,26 @@ export class FriendsComponent implements OnInit {
   }
 
   sendFriendRequest(userId: number): void {
+    // Immediately remove the user from suggestions for a better UX
+    const userToRemoveIndex = this.suggestions.findIndex(s => s.id === userId);
+    let removedUser: User | null = null;
+    
+    if (userToRemoveIndex !== -1) {
+      removedUser = {...this.suggestions[userToRemoveIndex]};
+      // Create a new array without the user
+      this.suggestions = [...this.suggestions.slice(0, userToRemoveIndex), 
+                         ...this.suggestions.slice(userToRemoveIndex + 1)];
+    }
+    
+    // Also check skill matches
+    const skillMatchIndex = this.skillMatches.findIndex(m => m.id === userId);
+    if (skillMatchIndex !== -1) {
+      removedUser = removedUser || {...this.skillMatches[skillMatchIndex]};
+      // Create a new array without the user
+      this.skillMatches = [...this.skillMatches.slice(0, skillMatchIndex), 
+                          ...this.skillMatches.slice(skillMatchIndex + 1)];
+    }
+    
     this.friendshipService.sendFriendRequest(userId).subscribe({
       next: () => {
         Swal.fire({
@@ -106,13 +129,26 @@ export class FriendsComponent implements OnInit {
           timer: 1800,
           showConfirmButton: false
         });
-        // Refresh lists
+        
+        // If the API call failed, we would add the user back to the suggestions list
+        // But since it succeeded, we can keep them removed
+        
+        // Refresh sent requests list to include the new request
         this.loadSentRequests();
-        this.loadSuggestions();
-        this.loadSkillMatches();
       },
       error: (error) => {
         console.error('Error sending friend request:', error);
+        
+        // If there was an error, add the user back to the suggestions list
+        if (removedUser) {
+          if (userToRemoveIndex !== -1) {
+            this.suggestions.splice(userToRemoveIndex, 0, removedUser as User);
+          }
+          if (skillMatchIndex !== -1) {
+            this.skillMatches.splice(skillMatchIndex, 0, removedUser as User);
+          }
+        }
+        
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -196,6 +232,18 @@ export class FriendsComponent implements OnInit {
   }
 
   removeFriend(friendshipId: number): void {
+    console.log('Attempting to remove friend with friendshipId:', friendshipId);
+    
+    if (!friendshipId) {
+      console.error('No valid friendshipId provided');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Cannot remove friend: Missing friendship information.'
+      });
+      return;
+    }
+    
     Swal.fire({
       title: 'Remove Friend',
       text: 'Are you sure you want to remove this friend?',
@@ -241,5 +289,29 @@ export class FriendsComponent implements OnInit {
 
   changeTab(tab: string): void {
     this.activeTab = tab;
+  }
+  
+  // Get profile image URL for proper display - delegates to MessageService for consistency
+  getProfileImageUrl(profileImage?: string | null): string {
+    // Use the MessageService implementation for consistency across the app
+    return this.messageService.getProfileImageUrl({ profileImage: profileImage });
+  }
+  
+  // Helper method to handle skills and limit to 4 items
+  getSplitSkills(skills: string | string[]): string[] {
+    if (!skills) {
+      return [];
+    }
+    
+    // If skills is already an array, use it directly
+    if (Array.isArray(skills)) {
+      return skills.slice(0, 4);
+    }
+    
+    // Otherwise, split by comma and trim each skill
+    const skillsArray = skills.split(',').map(skill => skill.trim());
+    
+    // Return only first 4 skills for display
+    return skillsArray.slice(0, 4);
   }
 }

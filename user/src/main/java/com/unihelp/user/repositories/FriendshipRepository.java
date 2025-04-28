@@ -40,4 +40,12 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     
     // Count pending friend requests for a user
     long countByRecipientIdAndStatus(Long recipientId, FriendshipStatus status);
+    
+    // Find friendships where user is requester OR recipient with a specific status
+    @Query("SELECT f FROM Friendship f WHERE "
+           + "(f.requester.id = :userId AND f.status = :status) OR "
+           + "(f.recipient.id = :userId AND f.status = :status)")
+    List<Friendship> findFriendshipsByUserIdAndStatus(
+        @org.springframework.data.repository.query.Param("userId") Long userId, 
+        @org.springframework.data.repository.query.Param("status") FriendshipStatus status);
 }

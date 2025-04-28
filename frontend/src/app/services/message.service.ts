@@ -292,6 +292,57 @@ export class MessageService {
     return this.http.get<any>(
       `${environment.apiUrl}/api/users/${userId}`,
       { headers: this.getHeaders() }
-    ).pipe(catchError(this.handleError));
+    ).pipe(
+      catchError((error) => {
+        console.error(`Error getting user ${userId} details:`, error);
+        return this.handleError(error);
+      })
+    );
+  }
+  
+  // Get profile image url with proper error handling
+  getProfileImageUrl(user: any): string {
+    if (!user) {
+      return 'assets/img/default-avatar.png';
+    }
+
+    // If user is a string, it's a direct path to the profile image
+    if (typeof user === 'string') {
+      // For base64 images without data URI prefix
+      if (/^[A-Za-z0-9+/=]+$/.test(user) && !user.startsWith('data:')) {
+        return `data:image/jpeg;base64,${user}`;
+      }
+      return user;
+    }
+
+    // Handle user object with profileImage property
+    if (user.profileImage) {
+      const profileImage = user.profileImage;
+      
+      // Already has data URI prefix
+      if (profileImage.startsWith('data:')) {
+        return profileImage;
+      }
+      
+      // Asset path
+      if (profileImage.startsWith('assets/')) {
+        return profileImage;
+      }
+      
+      // HTTP URL
+      if (profileImage.startsWith('http')) {
+        return profileImage;
+      }
+      
+      // Base64 string without prefix
+      if (/^[A-Za-z0-9+/=]+$/.test(profileImage)) {
+        return `data:image/jpeg;base64,${profileImage}`;
+      }
+
+      // Relative path
+      return `${environment.apiUrl}/${profileImage}`;
+    }
+    
+    return 'assets/img/default-avatar.png';
   }
 }

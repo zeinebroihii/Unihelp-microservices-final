@@ -24,6 +24,7 @@ import { ResetPasswordModalComponent } from './components/reset-password-modal/r
 import { ProfileCompletionComponent } from './components/profile-completion/profile-completion.component';
 import { BioAnalysisComponent } from './components/bio-analysis/bio-analysis.component';
 import { MessagingModule } from './messaging.module';
+import { PipesModule } from './pipes/pipes.module';
 
 
 @NgModule({
@@ -54,6 +55,7 @@ import { MessagingModule } from './messaging.module';
     MatIconModule,
     MatInputModule,
     MessagingModule,
+    PipesModule,
   ],
   providers: [
     AuthService, 

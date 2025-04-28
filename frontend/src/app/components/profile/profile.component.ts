@@ -8,6 +8,7 @@ import { NlpService, NlpAnalysisResult } from '../../services/nlp.service';
 import { MessageService } from '../../services/message.service';
 import { NotificationService } from '../../services/notification.service';
 import { FriendshipService } from '../../services/friendship.service';
+import { SkillMatchingService } from '../../services/skill-matching.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -39,6 +40,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
   isLoadingConversations: boolean = false;
   currentConversationUserId: number | null = null;
   
+  // Friends related properties
+  friends: any[] = [];
+  friendRequests: any[] = [];
+  friendSuggestions: any[] = [];
+  skillMatches: any[] = [];
+  isLoadingFriends: boolean = false;
+  isLoadingRequests: boolean = false;
+  isLoadingSuggestions: boolean = false;
+  isLoadingSkillMatches: boolean = false;
+  
   // Feature management
   activeFeature: string | null = null;
   activeFriendTab: string = 'friends'; // Default to friends tab
@@ -50,7 +61,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private nlpService: NlpService,
     private messageService: MessageService,
     private notificationService: NotificationService,
-    private friendshipService: FriendshipService
+    private friendshipService: FriendshipService,
+    private skillMatchingService: SkillMatchingService
   ) {
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required]],
@@ -252,22 +264,37 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   getProfileImageUrl(profileImage?: string | null): string {
-    if (!profileImage) {
-      return 'assets/img/default-user.png';
+    // Delegate to MessageService for consistent image handling throughout the app
+    // If a full user object is passed, use it directly
+    if (profileImage && typeof profileImage === 'object') {
+      return this.messageService.getProfileImageUrl(profileImage);
     }
     
-    // Check if the image is already a URL (starts with http or assets/)
-    if (profileImage.startsWith('http') || profileImage.startsWith('assets/')) {
-      return profileImage;
+    // Otherwise pass just the profileImage string/url or null
+    return this.messageService.getProfileImageUrl({ profileImage: profileImage });
+  }
+  
+  // Helper method to handle skills and limit to 4 items
+  getSplitSkills(skills: string | string[]): string[] {
+    if (!skills) {
+      return [];
     }
     
-    // Handle base64 image data - add the data URL prefix if not already present
-    if (!profileImage.startsWith('data:')) {
-      return `data:image/jpeg;base64,${profileImage}`;
+    // If skills is already an array, use it directly
+    if (Array.isArray(skills)) {
+      return skills.slice(0, 4);
     }
     
-    // Image already has data URL prefix
-    return profileImage;
+    // Otherwise, split by comma and trim each skill
+    const skillsArray = skills.split(',').map(skill => skill.trim());
+    
+    // Return only first 4 skills for display
+    return skillsArray.slice(0, 4);
+  }
+  
+  // Navigate to user profile
+  viewProfile(userId: number): void {
+    this.router.navigate(['/profile', userId]);
   }
 
   disconnect(): void {
@@ -604,6 +631,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.loadFriends();
         this.loadFriendRequests();
         this.loadFriendSuggestions();
+        this.loadSkillMatches();
       }
     }
   }
@@ -853,14 +881,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
   
-  // Friends section
-  friends: any[] = [];
-  friendRequests: any[] = [];
-  friendSuggestions: any[] = [];
-  isLoadingFriends: boolean = false;
-  isLoadingRequests: boolean = false;
-  isLoadingSuggestions: boolean = false;
+  // Friends section - properties already defined at the top of the class
   
+  // Load friends from API or fallback
   loadFriends(): void {
     if (!this.user) return;
     
@@ -870,6 +893,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.friends = data;
         this.isLoadingFriends = false;
+        console.log('Friends loaded successfully:', this.friends.length);
       },
       error: (error) => {
         console.error('Error loading friends:', error);
@@ -883,6 +907,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
   
+  // Load fallback friends for demo or testing
+  loadFallbackFriends(): void {
+    this.friends = Array(3).fill(0).map((_, i) => ({
+      id: i + 1,
+      firstName: ['John', 'Jane', 'Alex'][i],
+      lastName: ['Doe', 'Smith', 'Johnson'][i],
+      email: `friend${i+1}@example.com`,
+      profileImage: 'assets/img/default-avatar.png',  // Use consistent default image path
+      online: [true, false, true][i],
+      skills: ['JavaScript, HTML, CSS', 'Python, Data Science', 'Java, Spring Boot'][i]
+    }));
+  }
+  
+  // Load friend requests from API or fallback
   loadFriendRequests(): void {
     if (!this.user) return;
     
@@ -892,6 +930,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.friendRequests = data;
         this.isLoadingRequests = false;
+        console.log('Friend requests loaded successfully:', this.friendRequests.length);
       },
       error: (error) => {
         console.error('Error loading friend requests:', error);
@@ -905,6 +944,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
   
+  // Load fallback friend requests for demo or testing
+  loadFallbackFriendRequests(): void {
+    this.friendRequests = Array(2).fill(0).map((_, i) => ({
+      id: i + 10,
+      firstName: ['Michael', 'Sarah'][i],
+      lastName: ['Brown', 'Davis'][i],
+      email: `request${i+1}@example.com`,
+      profileImage: 'assets/img/default-avatar.png',  // Use consistent default image path
+      mutualFriends: i + 2,
+      createdAt: new Date()
+    }));
+  }
+  
+  // Load friend suggestions from API or fallback
   loadFriendSuggestions(): void {
     if (!this.user) return;
     
@@ -912,8 +965,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
     
     this.friendshipService.getFriendSuggestions().subscribe({
       next: (data) => {
-        this.friendSuggestions = data;
+        // Process the data to ensure profile images are handled correctly
+        this.friendSuggestions = data.map(suggestion => {
+          // If profileImage is already a complete object, use it directly
+          // Otherwise, ensure it's properly formatted for the MessageService
+          if (suggestion.profileImage && typeof suggestion.profileImage === 'string') {
+            if (!suggestion.profileImage.startsWith('http') && 
+                !suggestion.profileImage.startsWith('data:') && 
+                !suggestion.profileImage.startsWith('assets/')) {
+              suggestion.profileImage = `data:image/jpeg;base64,${suggestion.profileImage}`;
+            }
+          }
+          return suggestion;
+        });
+        
         this.isLoadingSuggestions = false;
+        console.log('Friend suggestions loaded successfully:', this.friendSuggestions.length);
       },
       error: (error) => {
         console.error('Error loading friend suggestions:', error);
@@ -927,38 +994,55 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
   
-  loadFallbackFriends(): void {
-    this.friends = Array(5).fill(0).map((_, i) => ({
-      id: i + 1,
-      firstName: ['Alex', 'Taylor', 'Jordan', 'Casey', 'Riley'][i],
-      lastName: ['Johnson', 'Smith', 'Lee', 'Morgan', 'Wilson'][i],
-      email: `friend${i+1}@example.com`,
-      profileImage: 'assets/img/default-user.png',
-      online: i % 2 === 0
-    }));
-  }
-  
-  loadFallbackFriendRequests(): void {
-    this.friendRequests = Array(3).fill(0).map((_, i) => ({
-      id: i + 100,
-      userId: i + 10,
-      firstName: ['Jamie', 'Morgan', 'Avery'][i],
-      lastName: ['Lopez', 'Chen', 'Roberts'][i],
-      profileImage: 'assets/img/default-user.png',
-      requestDate: new Date(Date.now() - (i * 86400000)), // days ago
-      mutualFriends: i * 2
-    }));
-  }
-  
+  // Load fallback friend suggestions for demo or testing
   loadFallbackFriendSuggestions(): void {
     this.friendSuggestions = Array(4).fill(0).map((_, i) => ({
       id: i + 20,
       firstName: ['Quinn', 'Harper', 'Rowan', 'Blake'][i],
       lastName: ['Miller', 'Taylor', 'Garcia', 'Thomas'][i],
       email: `suggestion${i+1}@example.com`,
-      profileImage: 'assets/img/default-user.png',
+      profileImage: 'assets/img/default-avatar.png',  // Use consistent default image path
       mutualFriends: i + 1,
-      department: ['Computer Science', 'Engineering', 'Business', 'Math'][i]
+      department: ['Computer Science', 'Engineering', 'Business', 'Math'][i],
+      skills: ['JavaScript, Angular', 'Python, Data Science', 'UI/UX, Design', 'Java, Spring Boot'][i]
+    }));
+  }
+
+  // Load users with matching skills
+  loadSkillMatches(): void {
+    if (!this.user) return;
+    
+    this.isLoadingSkillMatches = true;
+    
+    this.skillMatchingService.findUsersWithMatchingSkills().subscribe({
+      next: (data) => {
+        // Process the data and ensure profile images are formatted correctly
+        this.skillMatches = data;
+        this.isLoadingSkillMatches = false;
+        console.log('Skill matches loaded successfully:', this.skillMatches.length);
+      },
+      error: (error) => {
+        console.error('Error loading skill matches:', error);
+        this.isLoadingSkillMatches = false;
+        
+        // Load fallback data for demo
+        if (error.status === 404 || error.status === 0) {
+          this.loadFallbackSkillMatches();
+        }
+      }
+    });
+  }
+
+  // Provide fallback skill matches data for demo
+  loadFallbackSkillMatches(): void {
+    this.skillMatches = Array(3).fill(0).map((_, i) => ({
+      id: i + 30,
+      firstName: ['Alex', 'Jordan', 'Morgan'][i],
+      lastName: ['Chen', 'Smith', 'Rivera'][i],
+      email: `skillmatch${i+1}@example.com`,
+      profileImage: 'assets/img/default-avatar.png',  // Use consistent default image path
+      skills: ['JavaScript, Angular, Node.js', 'Python, Data Science, Machine Learning', 'UX Design, Figma, Prototyping'][i],
+      matchScore: [85, 72, 65][i]
     }));
   }
   

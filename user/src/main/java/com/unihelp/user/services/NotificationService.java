@@ -121,12 +121,33 @@ public class NotificationService {
     }
     
     /**
-     * Map notification entity to DTO
+     * Map notification entity to DTO with user information for display
      */
     private NotificationDTO mapToDTO(Notification notification) {
+        User user = notification.getUser();
+        String userName = null;
+        String userProfileImage = null;
+        
+        // Get user information if available
+        if (user != null) {
+            // Build user full name
+            if (user.getFirstName() != null || user.getLastName() != null) {
+                userName = (user.getFirstName() != null ? user.getFirstName() : "") + " " + 
+                          (user.getLastName() != null ? user.getLastName() : "");
+                userName = userName.trim(); // Trim any extra spaces
+            }
+            
+            // Convert profile image if available
+            if (user.getProfileImage() != null && user.getProfileImage().length > 0) {
+                userProfileImage = java.util.Base64.getEncoder().encodeToString(user.getProfileImage());
+            }
+        }
+        
         return NotificationDTO.builder()
                 .id(notification.getId())
                 .userId(notification.getUser().getId())
+                .userName(userName)
+                .userProfileImage(userProfileImage)
                 .content(notification.getContent())
                 .type(notification.getType())
                 .referenceId(notification.getReferenceId())

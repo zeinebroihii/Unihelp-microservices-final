@@ -20,11 +20,11 @@ public class Friendship {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id")
+    @JoinColumn(name = "requester_id", nullable = true) // Allow null to handle user deletion
     private User requester;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id")
+    @JoinColumn(name = "recipient_id", nullable = true) // Allow null to handle user deletion
     private User recipient;
     
     @Column(nullable = false)

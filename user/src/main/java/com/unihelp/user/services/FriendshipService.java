@@ -197,13 +197,33 @@ public class FriendshipService {
     }
     
     /**
-     * Get all friends of a user
+     * Get all friends of a user with their friendship IDs
      */
     public List<UserDTO> getFriends(Long userId) {
-        List<User> friends = friendshipRepository.findAllFriendsOfUser(userId);
-        return friends.stream()
-                .map(this::mapUserToDTO)
-                .collect(Collectors.toList());
+        // Get all friendships where the user is either requester or recipient and the status is ACCEPTED
+        List<Friendship> friendships = friendshipRepository.findFriendshipsByUserIdAndStatus(userId, FriendshipStatus.ACCEPTED);
+        
+        // Log for debugging
+        System.out.println("Found " + friendships.size() + " friendships for user " + userId);
+        
+        // Map each friendship to a UserDTO, including the friendshipId
+        return friendships.stream()
+            .map(friendship -> {
+                // Determine which user in the friendship is the friend (not the current user)
+                User friend = friendship.getRequester().getId().equals(userId) ? 
+                    friendship.getRecipient() : friendship.getRequester();
+                
+                // Map to DTO including the friendshipId
+                UserDTO dto = mapUserToDTO(friend);
+                dto.setFriendshipId(friendship.getId()); // Set the friendship ID
+                
+                // Log for debugging
+                System.out.println("Mapped friend: " + friend.getFirstName() + " " + friend.getLastName() + 
+                                  " with friendshipId: " + friendship.getId());
+                
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
     
     /**
@@ -282,15 +302,21 @@ public class FriendshipService {
     private UserDTO mapUserToDTO(User user) {
         if (user == null) return null;
         
-        return UserDTO.builder()
+        UserDTO.UserDTOBuilder builder = UserDTO.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .bio(user.getBio())
                 .skills(user.getSkills())
-                .role(user.getRole().name())
-                .build();
+                .role(user.getRole().name());
+                
+        // Convert profile image if available
+        if (user.getProfileImage() != null && user.getProfileImage().length > 0) {
+            builder.profileImage(java.util.Base64.getEncoder().encodeToString(user.getProfileImage()));
+        }
+                
+        return builder.build();
     }
     
     /**

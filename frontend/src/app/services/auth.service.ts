@@ -268,10 +268,30 @@ export class AuthService {
       .pipe(catchError(this.handleError));
   }
 
+  // Helper method to get auth headers with token
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  }
+  
   getCurrentUserProfile(): Observable<User> {
-    return this.http
-      .get<User>(`${this.apiUrl}/profile`)
-      .pipe(catchError(this.handleError));
+    return this.http.get<User>(`${this.apiUrl}/profile`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap((user: User) => {
+        // Store full name in localStorage for use in notifications
+        if (user && user.firstName && user.lastName) {
+          localStorage.setItem('fullName', `${user.firstName} ${user.lastName}`);
+        }
+      }),
+      catchError(this.handleError)
+    );
   }
   
   // Get current user from local storage or fetch it from server if needed

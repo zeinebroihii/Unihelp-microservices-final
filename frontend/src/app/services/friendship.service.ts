@@ -60,9 +60,19 @@ export class FriendshipService {
   // Send a friend request
   sendFriendRequest(recipientId: number): Observable<any> {
     const requestUrl = `${environment.apiUrl}/api/friendships/request/${recipientId}`;
+    
+    // Get current user first to include their name in the notification
+    // But this is the optimistic approach - proceed with the request even if getting user fails
+    const currentUserName = localStorage.getItem('fullName') || 'Someone';
+    
     return this.http.post(
       requestUrl,
-      {},
+      {
+        notificationData: {
+          message: `${currentUserName} sent you a friend request`,
+          type: 'FRIEND_REQUEST'
+        }
+      },
       { headers: this.getHeaders() }
     ).pipe(catchError((error) => {
       console.error('Error sending friend request:', error);
@@ -159,18 +169,35 @@ export class FriendshipService {
       { headers: this.getHeaders() }
     ).pipe(
       map((requests: any[]) => {
-        // Process the profile images to ensure they are properly formatted
-        return requests.map((request: any) => {
+        // Transform the FriendshipDTO into a flat structure expected by the UI
+        return requests.map((friendship: any) => {
+          // Extract user info from the requester (the one who sent the request)
+          const requester = friendship.requester;
+          
+          // Create a flattened object with the friendship ID and user details
+          const flattenedRequest = {
+            id: friendship.id,  // This is the friendship ID
+            userId: requester.id, // The user ID of the requester
+            firstName: requester.firstName,
+            lastName: requester.lastName,
+            email: requester.email,
+            profileImage: requester.profileImage,
+            requestDate: friendship.requestDate,
+            status: friendship.status,
+            mutualFriends: 0 // Default value, could be calculated if needed
+          };
+          
           // Ensure profileImage is properly formatted (if not null)
-          if (request.profileImage) {
+          if (flattenedRequest.profileImage) {
             // If it's not already a URL or data URL, assume it's base64 and add the prefix
-            if (!request.profileImage.startsWith('http') && 
-                !request.profileImage.startsWith('data:') && 
-                !request.profileImage.startsWith('assets/')) {
-              request.profileImage = `data:image/jpeg;base64,${request.profileImage}`;
+            if (!flattenedRequest.profileImage.startsWith('http') && 
+                !flattenedRequest.profileImage.startsWith('data:') && 
+                !flattenedRequest.profileImage.startsWith('assets/')) {
+              flattenedRequest.profileImage = `data:image/jpeg;base64,${flattenedRequest.profileImage}`;
             }
           }
-          return request;
+          
+          return flattenedRequest;
         });
       }),
       catchError((error) => {
