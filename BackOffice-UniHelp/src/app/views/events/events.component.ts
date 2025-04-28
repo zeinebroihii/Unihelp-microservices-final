@@ -299,6 +299,25 @@ export class EventsComponent implements OnInit {
     }
   }
 
+
+  suggestDescription(): void {
+    const eventTitle = this.eventForm.get('titre')?.value;
+    if (!eventTitle) {
+      this.showNotification('Please enter an event title first.', 'danger');
+      return;
+    }
+    this.eventService.suggestDescription(eventTitle).subscribe({
+      next: (description: string) => {
+        this.eventForm.patchValue({ description });
+        this.showNotification('Description suggested successfully!', 'success');
+      },
+      error: (err: any) => {
+        const errorMessage = err.error || err.message || 'Unknown error';
+        this.showNotification('Failed to suggest description: ' + errorMessage, 'danger');
+      }
+    });
+  }
+
   resetForm(): void {
     this.eventForm.reset();
     this.setUserId();
@@ -308,6 +327,6 @@ export class EventsComponent implements OnInit {
 
   showNotification(message: string, type: string): void {
     this.notification = { message, type };
-    setTimeout(() => this.notification = null, 3000);
+    setTimeout(() => this.notification = null, 5000);
   }
 }

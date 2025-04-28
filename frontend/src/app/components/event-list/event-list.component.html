@@ -12,7 +12,7 @@
 
     <div *ngIf="viewMode === 'list'">
       <div class="booked-events-section" *ngIf="(isStudent$ | async) && userTickets.length > 0">
-        <h2 class="section-title">My Registered Events</h2>
+        <h2 class="section-title">My Booked Events</h2>
         <div class="event-grid">
           <mat-card *ngFor="let ticket of userTickets" class="event-card" @fadeIn>
             <ng-container *ngIf="ticket.event as event">
@@ -70,7 +70,7 @@
                   class="action-button cancel-button"
                 >
                   <mat-icon>cancel</mat-icon>
-                  Cancel
+                  Cancel Event
                 </button>
               </mat-card-actions>
             </ng-container>
@@ -119,7 +119,7 @@
                 class="action-button register-button"
               >
                 <mat-icon>calendar_today</mat-icon>
-                Register
+                Book Event
               </button>
             </ng-container>
           </mat-card-actions>

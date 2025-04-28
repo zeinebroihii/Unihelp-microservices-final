@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Event } from '../models/event.model';
 import { Ticket } from '../models/ticket.model';
@@ -30,5 +30,11 @@ export class EventService {
 
   deleteEvent(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  suggestDescription(eventTitle: string): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/suggest-description`, eventTitle, {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    });
   }
 }
