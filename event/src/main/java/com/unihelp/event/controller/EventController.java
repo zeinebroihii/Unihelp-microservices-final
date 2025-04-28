@@ -34,7 +34,7 @@ public class EventController {
     @Value("${gemini.api-key}")
     private String geminiApiKey;
 
-    @Value("${gemini.base-url}")
+    @Value("${gemini.base-url:https://generativelanguage.googleapis.com/v1beta}")
     private String geminiBaseUrl;
 
     @PostMapping
