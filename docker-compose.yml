@@ -140,6 +140,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db-event:3306/events?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
+      - GEMINI_API_KEY=AIzaSyC6Og5udP-FpFEsdfvYY-tXKonTOL9LiRQ
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8095/actuator/health" ]
       interval: 10s
