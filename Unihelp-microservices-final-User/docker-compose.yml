@@ -199,6 +199,47 @@ services:
       mysql-events:
         condition: service_healthy
 
+  mysql-offres:
+    image: mysql:8.0
+    container_name: mysql-db-offres
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: offres
+    ports:
+      - "3318:3306"
+    volumes:
+      - mysql_data_offres:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      interval: 10s
+      retries: 10
+
+  offres:
+    build: ./offres
+    container_name: offres-service
+    ports:
+      - '8012:8012'
+    expose:
+      - '8012'
+    environment:
+      - DISCOVERY_SERVICE_URL=http://discovery:8761/eureka
+      - CONFIG_SERVICE_URL=http://config-server:9999
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db-offres:3306/offres?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8012/actuator/health" ]
+      interval: 10s
+      retries: 4
+    depends_on:
+      discovery:
+        condition: service_healthy
+      user:
+        condition: service_healthy
+      mysql-offres:
+        condition: service_healthy
+
 
   gateway:
     build: ./gateway
@@ -266,6 +307,7 @@ services:
 volumes:
   mysql_data_user:
   mysql_data_cours:
+  mysql_data_offres:
   mysql_data_events:
   mysql_data_blog:
   blog:

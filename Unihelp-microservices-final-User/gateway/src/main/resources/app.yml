@@ -66,6 +66,15 @@ spring:
               - Path=/api/events/**
               - Path=/api/tickets/**
 
+          - id: r12
+            uri: lb://OFFRES
+            predicates:
+              - Path=/api/offres/**
+              - Path=/api/candidatures/**
+              - Path=/api/notifications/**
+              - Path=/api/cv/**
+              - Path=/api/companies/**
+
   application:
     name: gateway-service
 server:

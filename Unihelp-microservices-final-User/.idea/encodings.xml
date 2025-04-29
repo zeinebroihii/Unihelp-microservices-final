@@ -6,7 +6,9 @@
     <file url="file://$PROJECT_DIR$/cours/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/discovery/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/event/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/event/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/offres/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user/src/main/java" charset="UTF-8" />
   </component>
 </project>
