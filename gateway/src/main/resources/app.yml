@@ -16,7 +16,7 @@ spring:
           - id: r3
             uri: lb://GROUPE
             predicates:
-              - Path=/groupe/**
+              - Path=/api/groupes/**
   application:
     name: gateway-service
 server:

@@ -35,11 +35,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/admin/users/**").permitAll()
                         .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/admin/users/by-name").permitAll()  // 👈 spécifique
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers( "/actuator/**").permitAll()
-                        .requestMatchers( "/v3/api-docs/**").permitAll()
-                        .requestMatchers( " /swagger-ui/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
 
 
                         .anyRequest().authenticated()

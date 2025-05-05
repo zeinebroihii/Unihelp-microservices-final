@@ -129,7 +129,7 @@ services:
     build: ./groupe
     container_name: groupe-service
     ports:
-      - "8078:8078"
+      - "8070:8070"
     environment:
       - DISCOVERY_SERVICE_URL=http://discovery:8761/eureka
       - CONFIG_SERVICE_URL=http://config-server:9999
@@ -137,7 +137,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8078/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8070/actuator/health" ]
       interval: 10s
       retries: 4
     depends_on:
