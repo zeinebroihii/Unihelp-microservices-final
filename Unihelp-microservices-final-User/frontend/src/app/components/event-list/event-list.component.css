@@ -1,5 +1,5 @@
 .page-wrapper {
-  background-color: #f8fafc;
+  background-color: #b0bfd5;
   min-height: 100vh;
   padding: 140px 0 50px 0; /* Increased top padding to 140px for more buffer */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -15,7 +15,7 @@
   font-size: 1.5rem;
   color: #1a3b6e;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+
 }
 
 .view-toggle {

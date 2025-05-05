@@ -35,7 +35,7 @@
               <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
                 <div class="form-group">
                   <label for="titre">Event Title</label>
-                  <input type="text" class="form-control" id="titre" formControlName="titre" required>
+                  <input type="text" class="form-control" id="titre" formControlName="titre" [(ngModel)]="eventTitle" required>
                   <div *ngIf="eventForm.get('titre')?.touched && eventForm.get('titre')?.hasError('required')" class="text-danger">
                     Event title is required
                   </div>
@@ -56,7 +56,10 @@
                 </div>
                 <div class="form-group">
                   <label for="description">Description</label>
-                  <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
+                  <div class="input-group">
+                    <textarea class="form-control" id="description" formControlName="description" rows="3">{{eventForm.get('description')?.value}}</textarea>
+                    <button type="button" class="btn btn-primary mt-2" (click)="suggestDescription(eventTitle)">Suggest Description</button>
+                  </div>
                 </div>
                 <button type="submit" class="btn btn-primary" [disabled]="eventForm.invalid">
                   {{ isEditing ? 'Update Event' : 'Add Event' }}

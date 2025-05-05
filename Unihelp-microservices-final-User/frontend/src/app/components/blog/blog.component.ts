@@ -179,7 +179,7 @@ export class BlogComponent implements OnInit {
   }
 
   AddBlog(): void {
-    this.router.navigate(['/add-blog']);
+    this.router.navigate(['/addblog']);
   }
 
   async syncPendingBlogs(): Promise<void> {

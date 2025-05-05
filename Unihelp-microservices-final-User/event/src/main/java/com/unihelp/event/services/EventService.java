@@ -35,7 +35,7 @@ public class EventService {
             throw new IllegalArgumentException("User not found with ID: " + event.getUserId());
         }
         if (instructor.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("Only instructors with the role 'MENTOR' can create event");
+            throw new IllegalArgumentException("Only instructors with the role 'ADMIN' can create event");
         }
         event.setUser(instructor);
         return eventRepository.save(event);

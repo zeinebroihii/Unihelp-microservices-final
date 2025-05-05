@@ -30,7 +30,7 @@ public class BlogService {
             blog.setUser(user);
             blog.setIsVerified(false);
             // Save the blog to the repository
-            return blogRepository.save(blog);// only saves persistent fields
+            return blogRepository.save(blog)    ;// only saves persistent fields
     }
 
     public Blog getBlogWithId(Long blogId) {

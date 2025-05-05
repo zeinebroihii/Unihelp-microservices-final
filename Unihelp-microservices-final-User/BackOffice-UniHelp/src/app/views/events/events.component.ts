@@ -11,7 +11,7 @@ import { DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { map, catchError } from 'rxjs/operators';
-
+import {HttpClient} from "@angular/common/http"
 @Component({
   selector: 'app-events',
   standalone: true,
@@ -24,7 +24,8 @@ import { map, catchError } from 'rxjs/operators';
     NgClass,
     FormsModule,
     NgIf,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+
   ],
   animations: [
     trigger('fadeIn', [
@@ -54,21 +55,28 @@ export class EventsComponent implements OnInit {
   pageSize: number = 5;
   totalPages: number = 1;
   currentUserId: number | null = null;
+  eventTitle: string = ''; // Bound to input field
+  suggestedDescription: string = ''; // This will hold the suggested description
+  staticUserId: number | null = 1;
 
   constructor(
     private eventService: EventService,
     private ticketService: TicketService,
     private userService: UserService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private http: HttpClient
+
   ) {
+    // Initialize form
     // Initialize form
     this.eventForm = this.fb.group({
       titre: ['', Validators.required],
       date: ['', Validators.required],
       lieu: ['', Validators.required],
       description: [''],
-      userId: [null]
+      userId: [this.staticUserId]
     });
+
 
     // Determine if user is admin
     this.isAdmin$ = this.getCurrentUser().pipe(
@@ -293,6 +301,8 @@ export class EventsComponent implements OnInit {
     }
 
     const event: Event = this.eventForm.value;
+    if(this.staticUserId != null)
+      event.userId = this.staticUserId;
 
     if (this.isEditing && this.editingEventId !== null) {
       this.eventService.updateEvent(this.editingEventId, event).subscribe({
@@ -307,6 +317,7 @@ export class EventsComponent implements OnInit {
         }
       });
     } else {
+      console.log('Creating new event:', event);
       this.eventService.createEvent(event).subscribe({
         next: () => {
           this.showNotification('Event added successfully!', 'success');
@@ -326,6 +337,28 @@ export class EventsComponent implements OnInit {
     this.setUserId();
     this.isEditing = false;
     this.editingEventId = null;
+  }
+  suggestDescription(title: string): void {
+    if (title) {
+      this.http.post(
+        'http://localhost:8888/EVENTS/api/events/suggest-description',
+        { title },
+        { responseType: 'text' as 'json' }
+      ).subscribe(
+        (description: any) => {
+          this.suggestedDescription = description as string;
+          this.eventForm.patchValue({ description: this.suggestedDescription });
+        },
+        (error) => {
+          console.error('Error suggesting description:', error);
+          this.suggestedDescription = '';
+          this.eventForm.patchValue({ description: '' });
+        }
+      );
+    } else {
+      this.suggestedDescription = '';
+      this.eventForm.patchValue({ description: '' });
+    }
   }
 
   showNotification(message: string, type: string): void {

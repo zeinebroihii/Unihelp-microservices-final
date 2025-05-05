@@ -24,24 +24,20 @@
       <nav id="nav-menu-container">
         <ul class="nav-menu">
           <li><a routerLink="/" routerLinkActive="active">HOME</a></li>
-          <li><a routerLink="/about" routerLinkActive="active">ABOUT</a></li>
-          <li><a routerLink="/members" routerLinkActive="active">MEMBERS</a></li>
-          
+
           <li class="menu-has-children"><a href="#" (click)="$event.preventDefault()">BLOGS</a>
             <ul>
-              <li><a routerLink="/blog-home">Blog Home</a></li>
-              <li><a routerLink="/blog-single">Blog Single</a></li>
+              <li><a [routerLink]="['/blogs']">Blog List</a></li>
+              <li><a [routerLink]="['/addblog']">Add Blog</a></li>
             </ul>
           </li>
-          
+
           <li class="menu-has-children"><a href="#" (click)="$event.preventDefault()">EVENTS</a>
             <ul>
               <li><a routerLink="/events">All Events</a></li>
-              <li><a routerLink="/event-details">Event Details</a></li>
-              <li><a routerLink="/tickets">My Tickets</a></li>
             </ul>
           </li>
-          
+
           <li class="menu-has-children"><a href="#" (click)="$event.preventDefault()">GROUPS</a>
             <ul>
               <li><a routerLink="/groups">All Groups</a></li>
@@ -49,28 +45,26 @@
               <li><a routerLink="/meetings">Meetings</a></li>
             </ul>
           </li>
-          
+
           <li class="menu-has-children"><a href="#" (click)="$event.preventDefault()">COURSES</a>
             <ul>
               <li><a routerLink="/courses">All Courses</a></li>
-              <li><a routerLink="/course-details">Course Details</a></li>
-              <li><a routerLink="/my-courses">My Courses</a></li>
             </ul>
           </li>
-          
+
           <li class="menu-has-children"><a href="#" (click)="$event.preventDefault()">JOBS</a>
             <ul>
               <li><a routerLink="/job-offers">Job Offers</a></li>
               <li><a routerLink="/my-applications">My Applications</a></li>
             </ul>
-          </li>          
+          </li>
           <li *ngIf="!isLoggedIn" class="login-signup">
             <a routerLink="/login" class="btn btn-outline-primary">Login</a>
           </li>
           <li *ngIf="!isLoggedIn" class="login-signup">
             <a routerLink="/signup" class="btn btn-primary">Sign Up</a>
           </li>
-          
+
           <li *ngIf="isLoggedIn" class="menu-has-children">
             <a href="#" (click)="$event.preventDefault(); toggleOptions()" class="user-profile-link">
               <div class="profile-image-container" *ngIf="currentUser">
