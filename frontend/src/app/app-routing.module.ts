@@ -52,10 +52,10 @@ const routes: Routes = [
   {path:'addblog',component:AddBlogComponent},
   {path:'editblog/:id',component:AddBlogComponent},
   { path: 'events', component: EventListComponent },
-  { path: 'add-group', component: GroupAddComponent },
-  { path: 'notifications', component: NotificationCenterComponent },
-  { path: 'groups', component: GroupManagmentComponent },
-  { path: 'chat/:groupId', component: ChatComponent },
+  { path: 'add-group', component: GroupAddComponent  },
+  { path: 'Notifications', component: NotificationCenterComponent  },
+  { path: 'groups', component: GroupManagmentComponent  },
+  { path: 'chat/:groupId', component: ChatComponent  },
   { path: 'group/:groupId/members', component: GroupMembersComponent },
 
   { path: '**', component: NotFoundComponent } // Wildcard route for 404

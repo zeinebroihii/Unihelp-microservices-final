@@ -21,32 +21,34 @@ export interface Notification {
 @Injectable({ providedIn: 'root' })
 export class NotificationApiService {
   // Remplace '/api/notifications' par l'URL complète de ton micro-service
-  private base = 'http://localhost:8078/notifications';
+  private base = 'http://localhost:8078/notifications1';
   private groupBase = 'http://localhost:8078/api/groupes';
 
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Notification[]> {
-    const id = +sessionStorage.getItem('userId')!;
-    return this.http.get<Notification[]>(`${this.base}/user/${id}`);
+    const userStr = localStorage.getItem('user');
+    if (!userStr) throw new Error('Utilisateur non connecté');
+    const user = JSON.parse(userStr);
+    return this.http.get<Notification[]>(`${this.base}/user/${user.id}`);
   }
 
   getUnread(): Observable<Notification[]> {
-    const id = +sessionStorage.getItem('userId')!;
-    return this.http.get<Notification[]>(`${this.base}/user/${id}/unread`);
+    const userStr = localStorage.getItem('user');
+    if (!userStr) throw new Error('Utilisateur non connecté');
+    const user = JSON.parse(userStr);
+    return this.http.get<Notification[]>(`${this.base}/user/${user.id}/unread`);
   }
 
   markAsRead(id: number): Observable<void> {
     return this.http.patch<void>(`${this.base}/${id}/read`, {});
   }
 
-
   markAllAsRead(): Observable<void> {
-    const userId = +sessionStorage.getItem('userId')!;
-    return this.http.patch<void>(
-      `${this.base}/user/${userId}/read-all`,
-      {}
-    );
+    const userStr = localStorage.getItem('user');
+    if (!userStr) throw new Error('Utilisateur non connecté');
+    const user = JSON.parse(userStr);
+    return this.http.patch<void>(`${this.base}/user/${user.id}/read-all`, {});
   }
 
   blockUserInGroup(groupId: number, userId: number): Observable<void> {

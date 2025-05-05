@@ -50,10 +50,10 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { GroupAddComponent } from './group-add/group-add.component';
 import { GroupManagmentComponent } from './group-managment/group-managment.component';
-import { ChatComponent } from './chat/chat.component';
 import { GroupMembersComponent } from './group-members/group-members.component';
 import { NotificationBellComponent } from './notification-bell/notification-bell.component';
 import { NotificationCenterComponent } from './notification-center/notification-center.component';
+import {ChatComponent} from './chat/chat.component';
 
 @NgModule({
   declarations: [
@@ -84,10 +84,10 @@ import { NotificationCenterComponent } from './notification-center/notification-
     EventDetailsDialogComponent,
     GroupAddComponent,
     GroupManagmentComponent,
-    ChatComponent,
     GroupMembersComponent,
     NotificationBellComponent,
-    NotificationCenterComponent
+    NotificationCenterComponent,
+    ChatComponent,
   ],
   imports: [
     BrowserModule,

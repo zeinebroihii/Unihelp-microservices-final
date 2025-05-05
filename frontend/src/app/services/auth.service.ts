@@ -47,7 +47,7 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/api/auth`;
+  private apiUrl = `http://localhost:8070/api/auth`;
 
   constructor(private http: HttpClient, private fingerprintService: FingerprintService) {}
 

@@ -68,3 +68,23 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* S'assure que l'app prend toute la hauteur */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Container principal de l'app */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Contenu principal sous le header */
+.main-content {
+  flex: 1;
+  padding-top: 140px; /* ajuste selon la hauteur exacte du header */
+  padding-bottom: 80px; /* si tu as un footer ou espace bas */
+}

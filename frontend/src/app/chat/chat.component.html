@@ -1,5 +1,8 @@
-<!-- ✅ ENTÊTE AVEC BOUTON PARAMÈTRES -->
+<div class="chat-container">
 <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+  <a [routerLink]="['/groups']" >
+    ←  Back to All Groups
+  </a>
   <h5 class="mb-0">💬 Chat du Groupe</h5>
   <button class="btn btn-sm btn-outline-secondary" (click)="openGroupOptions()">Settings</button>
 </div>
@@ -505,3 +508,5 @@
     </div>
   </div>
 
+</div>
+</div>

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Message } from '../models/Message';
 import { GroupMemberDTO } from '../models/GroupeMemberDTO';
-import { AuthService, User } from 'src/app/services/auth.service';
+import { User } from '../models/user.model';
 import { UserInfraction } from '../models/ui';
 import { Groupe } from '../models/groupe';
 
@@ -11,10 +11,9 @@ import { Groupe } from '../models/groupe';
   providedIn: 'root'
 })
 export class ChatService {
-  private baseUrl = 'http://localhost:8070/api/groupes';
+  private baseUrl = 'http://localhost:8078/api/groupes';
 
   constructor(private http: HttpClient) { }
-
 
   getMessages(groupId: number): Observable<Message[]> {
     return this.http.get<Message[]>(`${this.baseUrl}/${groupId}/messages`);

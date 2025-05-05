@@ -5,10 +5,10 @@ import { Message } from '../models/Message';
 import { GroupMemberDTO } from '../models/GroupeMemberDTO';
 import { ChatWebSocketService } from 'src/app/services/chat-web-socket.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { AuthService, User } from 'src/app/services/auth.service';
 import {Subscription} from "rxjs";
 import { skip, filter } from 'rxjs/operators';
 import { OpenrouterService } from '../services/openrouter.service';
+import { User } from '../models/user.model';
 
 
 declare var bootstrap: any;
@@ -63,7 +63,6 @@ export class ChatComponent implements OnInit {
     private router: Router,
     private chatWebSocket: ChatWebSocketService,
     private openRouterService: OpenrouterService,
-    private authService: AuthService ,  // 👈 AJOUTE ÇA !
     private sanitizer: DomSanitizer // ← ici
 
 

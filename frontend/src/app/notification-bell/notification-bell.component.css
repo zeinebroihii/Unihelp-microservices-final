@@ -1,0 +1,17 @@
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+  font-size: 20px;
+  color: #fff;
+}
+
+.notification-bell .badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 6px;
+}
