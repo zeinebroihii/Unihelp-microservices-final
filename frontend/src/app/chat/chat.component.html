@@ -1,0 +1,507 @@
+<!-- ✅ ENTÊTE AVEC BOUTON PARAMÈTRES -->
+<div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+  <h5 class="mb-0">💬 Chat du Groupe</h5>
+  <button class="btn btn-sm btn-outline-secondary" (click)="openGroupOptions()">Settings</button>
+</div>
+
+<!--  ZONE DES MESSAGES -->
+<div #scrollMe class="chat-box p-2 border rounded bg-light" style="height: 70vh; overflow-y: auto;">
+  <div *ngIf="selectedFile" class="d-flex justify-content-end mb-2">
+    <div class="p-2 px-3 rounded shadow-sm bg-secondary text-white" style="max-width: 40%;">
+      📎 {{ selectedFile.name }}
+      <div class="text-end small mt-1 text-white-50">🕒 En attente d'envoi...</div>
+    </div>
+  </div>
+
+  <!--  BOUCLE DES MESSAGES -->
+  <ng-container *ngFor="let msg of messages; let i = index">
+    <ng-container *ngIf="!msg.hiddenFor?.includes(currentUserId)">
+
+      <div *ngIf="isNewDate(i)" class="text-center text-muted small my-2">
+        — {{ formatDateHeader(msg.time) }} —
+      </div>
+
+      <!-- Container Message -->
+      <div class="d-flex mb-2"
+           [ngClass]="{
+          'justify-content-end': msg.senderId === currentUserId || isSystemMessageMine(msg),
+          'justify-content-start': msg.senderId !== currentUserId && !isSystemMessageMine(msg)
+        }">
+
+        <!-- Bulle de message -->
+        <div class="p-2 px-3 rounded shadow-sm"
+             [ngClass]="{
+            'bubble-me': msg.senderId === currentUserId,
+            'bubble-other': msg.senderId !== currentUserId
+          }"
+             style="max-width: 40%; min-width: 100px; font-size: 0.9rem;">
+
+          <!-- 📊 Message système -->
+          <!-- ✅ Si c'est un message système -->
+          <ng-container *ngIf="msg.senderId === -1">
+            <!-- Cas où ce n'est PAS moi -->
+            <ng-container *ngIf="!isSystemMessageMine(msg); else mySystemMessage">
+              <div class="d-flex align-items-start gap-2">
+                <img
+                  *ngIf="getSenderFromSystemMsg(msg.fileUrl)?.profileImage"
+                  [src]="sanitizeImage(getSenderFromSystemMsg(msg.fileUrl)?.profileImage)"
+                  class="rounded-circle"
+                  width="30"
+                  height="30"
+                  alt="Avatar"
+                  (error)="onImageError($event)" />
+
+                <div>
+                  <div class="fw-semibold text-muted small mb-1">
+                    {{ getSenderFromSystemMsg(msg.fileUrl)?.firstName }}
+                    {{ getSenderFromSystemMsg(msg.fileUrl)?.lastName }}
+                  </div>
+                  <div class="text-wrap small text-danger fw-semibold">
+                    ⚠️ {{ msg.content }}
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Cas où c'est moi -->
+            <ng-template #mySystemMessage>
+              <div class="d-flex align-items-start gap-2">
+                <div class="text-wrap small text-danger fw-semibold">
+                  ⚠️ Your message has been blocked
+                </div>
+              </div>
+            </ng-template>
+
+          </ng-container>
+
+
+
+          <!-- 👤 Nom + image si autre utilisateur -->
+          <ng-container *ngIf="msg.senderId !== currentUserId && msg.senderId !== -1">
+            <div class="d-flex align-items-center mb-1">
+              <img *ngIf="getUserById(msg.senderId)?.profileImage"
+                   [src]="sanitizeImage(getUserById(msg.senderId)?.profileImage)"
+                   class="rounded-circle me-2" width="30" height="30" alt="Avatar"
+                   (error)="onImageError($event)" />
+              <div class="fw-semibold text-muted small">
+                {{ getUserById(msg.senderId)?.firstName }} {{ getUserById(msg.senderId)?.lastName }}
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- 📄 Message fichier -->
+          <!-- ✅ N’affiche PAS le fichier si message système -->
+
+
+          <!-- 📎 Affichage conditionnel du fichier (sauf si SYSTEM) -->
+          <div *ngIf="msg.fileUrl && msg.senderId !== -1" class="file-box p-2 rounded bg-light shadow-sm mb-2">
+
+            <!-- 🎧 Si c’est un message vocal -->
+            <ng-container *ngIf="msg.fileUrl.endsWith('.webm'); else normalFile">
+              <audio
+                [src]="'http://localhost:8078/api/groupes/download?filename=' + extractFileName(msg.fileUrl)"
+                controls
+                preload="none"
+                style="width: 200px;"
+              ></audio>
+
+            </ng-container>
+
+            <!-- 📄 Sinon, affichage classique pour autres fichiers -->
+            <ng-template #normalFile>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-file-earmark-arrow-up-fill fs-3 text-secondary me-3"></i>
+                <div>
+                  <div class="fw-bold">{{ extractFileName(msg.fileUrl) }}</div>
+                  <div class="text-muted small" *ngIf="msg.senderId !== currentUserId">
+                    <a [href]="'http://localhost:8078/api/groupes/download?filename=' + extractFileName(msg.fileUrl)" target="_blank">
+                      Télécharger
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+
+          </div>
+
+
+          <!-- 🖊️ Mode Edition -->
+          <div *ngIf="editingMessageId === msg.id" class="mt-1">
+            <textarea [(ngModel)]="editedContent" class="form-control form-control-sm mb-1"></textarea>
+            <div class="text-end">
+              <button class="btn btn-success btn-sm me-1" (click)="confirmEdit()">✅</button>
+              <button class="btn btn-secondary btn-sm" (click)="cancelEditing()">❌</button>
+            </div>
+          </div>
+          <!-- 💬 Affichage du message auquel on répond -->
+          <!-- 🔁 Bloc d’affichage de la réponse -->
+          <div *ngIf="msg.replyToMessage" class="reply-box mb-2 p-2 border-start border-3 bg-white rounded small shadow-sm"
+               [ngClass]="{
+       'border-primary': msg.replyToSenderId !== currentUserId,
+       'border-success': msg.replyToSenderId === currentUserId
+     }">
+            <div class="small text-muted">
+              <!-- 🙋 Si je réponds à quelqu’un -->
+              <ng-container *ngIf="msg.senderId === currentUserId">
+                You replied to <strong>{{ msg.replyToMessage.senderName }}</strong>
+              </ng-container>
+
+              <!-- 👥 Si quelqu’un me répond -->
+              <ng-container *ngIf="msg.senderId !== currentUserId && msg.replyToSenderId === currentUserId">
+                📩 <strong>{{ msg.senderName }}</strong>replied to <strong>you</strong>
+              </ng-container>
+
+              <!-- 👀 Si un autre membre répond à un autre -->
+              <ng-container *ngIf="msg.senderId !== currentUserId && msg.replyToSenderId !== currentUserId">
+                🧵 <strong>{{ msg.senderName }}</strong> replied to <strong>{{ msg.replyToMessage.senderName }}</strong>
+              </ng-container>
+            </div>
+
+            <div class="fw-semibold small text-dark">
+              {{ msg.replyToMessage.content }}
+            </div>
+            <div *ngIf="msg.replyToMessage.fileUrl" class="small text-muted">
+              📎 {{ extractFileName(msg.replyToMessage.fileUrl) }}
+            </div>
+          </div>
+
+
+          <!-- 📲 Texte message -->
+          <div *ngIf="msg.senderId !== -1 && editingMessageId !== msg.id && msg.content" class="text-wrap small">
+            {{ msg.content }}
+          </div>
+
+          <!-- 🥳 Réactions -->
+          <div *ngIf="msg.reactions && msg.reactions.length > 0" class="mt-1 small fw-semibold"
+               (click)="openReactionDetails(msg, '')" style="cursor: pointer;">
+            {{ getGroupedEmojisSummary(msg) }}
+          </div>
+
+          <!-- 🕒 Heure -->
+          <div class="text-end small mt-1"
+               [ngClass]="{ 'text-white': msg.senderId === currentUserId, 'text-muted': msg.senderId !== currentUserId }">
+            {{ formatTime(msg.time) }}
+          </div>
+
+          <!-- ⋮ Menu message -->
+          <div class="text-end mt-2 position-relative">
+            <button class="btn btn-sm" (click)="toggleMenu(msg.id!)">⋮</button>
+
+            <div class="dropdown-menu show" *ngIf="activeMenuMessageId === msg.id"
+                 [ngStyle]="{ right: msg.senderId === currentUserId ? '0' : 'auto', left: msg.senderId !== currentUserId ? '0' : 'auto' }"
+                 style="position: absolute; z-index: 10;">
+              <button class="dropdown-item" (click)="startReply(msg)">💬 Reply</button>
+              <button class="dropdown-item" (click)="addReaction(msg, '👍')">👍 </button>
+              <button class="dropdown-item" (click)="addReaction(msg, '❤️')">❤️ </button>
+              <button class="dropdown-item" (click)="addReaction(msg, '😂')">😂</button>
+              <div class="dropdown-divider" *ngIf="msg.senderId === currentUserId"></div>
+              <button *ngIf="msg.senderId === currentUserId" class="dropdown-item text-primary" (click)="startEditing(msg)">✏️ Edit</button>
+              <button *ngIf="msg.senderId === currentUserId" class="dropdown-item text-danger" (click)="confirmDelete(msg)">🗑 Delete</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+
+
+
+
+
+<!-- 📝 INPUT DE MESSAGE -->
+<div *ngIf="userBlocked" class="alert alert-danger text-center my-2">
+  {{ blockMessage }}
+</div>
+
+<!-- 📝 Champ de saisie message avec aperçu fichier intégré -->
+<div class="d-flex p-2 border-top bg-white align-items-end position-relative">
+  <div class="flex-grow-1 position-relative">
+    <div class="bg-light rounded p-2">
+      <!-- ✅ Alerte de réponse -->
+      <div *ngIf="replyTo" class="border-start border-primary ps-2 mb-2 bg-white rounded shadow-sm">
+        <div class="small text-muted">Réponse à {{ replyTo.senderName }}</div>
+        <div class="fw-semibold small">{{ replyTo.content }}</div>
+        <button class="btn btn-sm btn-link text-danger p-0" (click)="replyTo = null">❌ Annuler</button>
+      </div>
+
+      <!-- ✏️ Zone de texte -->
+      <!-- zone de saisie -->
+      <div class="d-flex p-2 border-top bg-white align-items-end position-relative">
+
+        <!-- textarea custom -->
+        <div class="flex-grow-1 me-2">
+    <textarea
+      #messageInput
+      [(ngModel)]="newMessage"
+      (input)="autoResize(messageInput)"
+      (keydown)="handleEnter($event)"
+      class="chat-input"
+      placeholder="Écris ton message..."
+      rows="1"
+      [disabled]="userBlocked"
+    ></textarea>
+        </div>
+
+        <!-- bouton record -->
+        <button
+          type="button"
+          class="btn-circle btn-record"
+          [class.recording]="isRecording"
+          (click)="toggleRecording()"
+          [attr.title]="isRecording ? 'Arrêter l’enregistrement' : 'Commencer l’enregistrement'"
+        >
+          <i class="bi" [ngClass]="isRecording ? 'bi-stop-fill' : 'bi-mic-fill'"></i>
+        </button>
+
+        <!-- bouton upload -->
+        <label
+          for="fileInput"
+          class="btn-circle btn-attach ms-2"
+          title="Joindre un fichier"
+        >
+          <i class="bi bi-paperclip"></i>
+        </label>
+        <input type="file" id="fileInput"
+               (change)="onFileSelected($event)"
+               hidden [disabled]="userBlocked" />
+
+        <!-- bouton résumé -->
+        <button
+          type="button"
+          class="btn-circle btn-recap ms-2"
+          (click)="onSummarizeDiscussion()"
+          [disabled]="isSummarizing"
+          title="Résumé"
+        >
+          <i class="bi bi-journal-text"></i>
+        </button>
+
+        <!-- bouton envoyer -->
+        <button
+          type="button"
+          class="btn-circle btn-send ms-2"
+          (click)="sendMessage()"
+          [disabled]="userBlocked"
+          title="Envoyer"
+        >
+          <i class="bi bi-send-fill"></i>
+        </button>
+
+      </div>
+
+
+      <!-- 📎 Aperçu du fichier sélectionné -->
+      <div *ngIf="selectedFile" class="d-flex align-items-center mt-2 p-2 bg-white rounded shadow-sm border">
+        <i class="bi bi-file-earmark-text-fill text-primary fs-4 me-2"></i>
+        <div class="flex-grow-1">
+          <strong class="d-block small">{{ selectedFile.name }}</strong>
+          <small class="text-muted">{{ (selectedFile.size / 1024).toFixed(1) }} Ko</small>
+        </div>
+        <button (click)="removeSelectedFile()" class="btn btn-sm btn-outline-danger ms-2">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+  <!-- en bas de votre template -->
+  <div
+    #summaryModal
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="summaryModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="summaryModalLabel" class="modal-title">
+            Résumé de la discussion
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ summaryText }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" (click)="closeSummaryModal()">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🛠️ GROUP SETTINGS MODAL -->
+  <div class="modal fade" id="groupOptionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Group Settings</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <ul class="list-group">
+            <li class="list-group-item" (click)="goToMembers()">👥 View Members</li>
+            <li *ngIf="isCurrentUserAdmin()" class="list-group-item" (click)="openAddMemberModal()">➕ Add Member</li>
+            <li class="list-group-item" (click)="openRenameModal()">✏️ Rename Group</li>
+            <li *ngIf="!isCurrentUserAdmin()" class="list-group-item text-danger" (click)="leaveGroup()">🚪 Leave Group</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Message Deletion Modal -->
+  <div class="modal fade" id="deleteMessageModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">Who do you want to delete this message for?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="deleteOption" id="forEveryone"
+                   [(ngModel)]="deleteMode" value="everyone" checked>
+            <label class="form-check-label" for="forEveryone">
+              Delete for everyone
+            </label>
+            <small class="text-muted d-block">The message will be removed for all group members.</small>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="deleteOption" id="forMe"
+                   [(ngModel)]="deleteMode" value="me">
+            <label class="form-check-label" for="forMe">
+              Delete for me
+            </label>
+            <small class="text-muted d-block">Only you will no longer see the message.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-danger" (click)="deleteConfirmed()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ➕ ADD MEMBER MODAL -->
+  <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Add a Member</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- 🔍 Search Field -->
+          <input
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+            type="text"
+            class="form-control"
+            placeholder="Search member by name..."
+            autocomplete="off"
+          />
+
+          <!-- 📋 Search Results -->
+          <ul *ngIf="searchResults.length > 0" class="list-group mt-2 shadow-sm">
+            <li
+              class="list-group-item list-group-item-action d-flex align-items-center"
+              *ngFor="let user of searchResults"
+              (click)="selectUser(user)"
+              style="cursor: pointer"
+            >
+              <img
+                [src]="sanitizeImage(user.profileImage)"
+                class="rounded-circle me-2"
+                width="30"
+                height="30"
+                alt="Avatar"
+              />
+              {{ user.firstName }} {{ user.lastName }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-success" (click)="addUser()">✅ Add</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 👍 MESSAGE REACTIONS MODAL -->
+  <div class="modal fade" id="reactionModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">Message Reactions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group">
+            <li *ngFor="let r of selectedReactions" class="list-group-item d-flex align-items-center justify-content-between">
+              <!-- Left: avatar + info -->
+              <div class="d-flex align-items-center">
+                <img
+                  [src]="sanitizeImage(r.userProfileImage)"
+                  class="rounded-circle me-2"
+                  width="35"
+                  height="35"
+                  alt="Avatar"
+                  (error)="onImageError($event)" />
+
+                <div>
+                  <div class="fw-bold">{{ r.userName }}</div>
+                </div>
+              </div>
+
+              <!-- Right: emoji -->
+              <div class="fs-5">{{ r.emoji }}</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL TO RENAME GROUP -->
+  <div class="modal fade" id="renameGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Rename Group</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <input [(ngModel)]="newGroupName" type="text" class="form-control" placeholder="New group name" />
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" (click)="renameGroup()">✅ Confirm</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+

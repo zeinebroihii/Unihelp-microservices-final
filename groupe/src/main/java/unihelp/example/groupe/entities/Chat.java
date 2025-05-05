@@ -23,4 +23,8 @@ public class Chat {
     private List<Message> messageList;
 
 
+    @OneToOne(mappedBy = "chat")
+    @JsonManagedReference
+    private Groupe groupe;
+
 }

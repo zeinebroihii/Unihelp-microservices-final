@@ -4,22 +4,23 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import unihelp.example.groupe.dto.RawUserDTO;
 import unihelp.example.groupe.dto.UserDTO;
+
+import java.util.Base64;
 import java.util.List;
 
-@FeignClient(name = "user", url = "http://localhost:8070/api/auth")
+@FeignClient(name = "user", url = "http://user-service:8073/api/auth")
 public interface UserClient {
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/admin/users/{id}")
     UserDTO getUserById(@PathVariable("id") Long id);
-
-    @GetMapping("/users")
+    @GetMapping("/admin/users")
     List<UserDTO> getAllUsers();
 
     // ⚠️ Ancienne méthode devenue obsolète
     // @GetMapping("/api/users/by-username/{username}")
     // UserDTO getUserByUsername(@PathVariable("username") String username);
-
     // ✅ Nouvelle version à utiliser si on veut chercher par prénom/nom
     @GetMapping("/by-name")
     UserDTO getUserByFullName(@RequestParam("firstName") String firstName,

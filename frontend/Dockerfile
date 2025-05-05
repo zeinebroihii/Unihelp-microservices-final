@@ -4,9 +4,9 @@ WORKDIR /usr/local/app
 
 COPY ./ /usr/local/app/
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
-RUN npm run build
+RUN npm run build --prod
 
 FROM nginx:latest
 

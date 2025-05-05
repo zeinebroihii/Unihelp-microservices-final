@@ -13,6 +13,8 @@ public interface IGroupMembershipRepository extends JpaRepository<GroupMembershi
     List<GroupMembership> findByGroupe(Groupe groupe);
     Optional<GroupMembership> findByUserIdAndGroupe(Long userId, Groupe group);
     List<GroupMembership> findByUserId(Long userId);
+    List<GroupMembership> findByGroupeGroupIdAndRoleIn(Long groupId, List<String> roles);
+    List<GroupMembership> findByGroupeGroupIdAndRole(Long groupId, String role);
 
 }
 

@@ -1,0 +1,98 @@
+<div class="container mt-5 mb-5" style="max-width: 600px;">
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-4">
+      <h3 class="card-title mb-4 text-center fw-bold">
+        <i class="bi bi-people-fill text-primary me-2"></i>
+        Create a New Group
+      </h3>
+
+      <form (ngSubmit)="createGroup()" #groupForm="ngForm" novalidate>
+
+        <!-- 📝 Group Name -->
+        <div class="mb-3">
+          <label for="groupName" class="form-label fw-semibold">Group Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="groupName"
+            [(ngModel)]="groupName"
+            name="groupName"
+            required
+            placeholder="e.g. Java Study Group"
+          />
+        </div>
+
+        <!-- 📖 Description -->
+        <div class="mb-3">
+          <label for="description" class="form-label fw-semibold">Description</label>
+          <textarea
+            id="description"
+            class="form-control"
+            rows="4"
+            [(ngModel)]="description"
+            name="description"
+            required
+            placeholder="Describe the purpose of this group..."
+          ></textarea>
+        </div>
+
+        <!-- 👥 Add Members -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Add Members</label>
+          <div class="form-check" *ngFor="let user of users">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              [value]="user.id"
+              (change)="onUserSelect($event)"
+              [id]="'user-' + user.id"
+              name="selectedUsers"
+            />
+            <label class="form-check-label" [for]="'user-' + user.id">
+              {{ user.firstName }} {{ user.lastName }}
+            </label>
+          </div>
+        </div>
+
+        <!-- 📷 Group Image -->
+        <div class="mb-3">
+          <label for="groupImage" class="form-label fw-semibold">Group Image</label>
+          <input
+            type="file"
+            class="form-control"
+            id="groupImage"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+          />
+
+          <!-- 🖼️ Image Preview -->
+          <div *ngIf="groupImageBase64" class="mt-3 text-center">
+            <img
+              [src]="groupImageBase64"
+              alt="Group Preview"
+              class="img-thumbnail"
+              style="max-width: 200px; border-radius: 1rem;"
+            />
+          </div>
+        </div>
+
+        <!-- ✅ Success Message -->
+        <div *ngIf="showSuccess" class="alert alert-success text-center mt-4 animate__animated animate__fadeInDown">
+          ✅ Group created successfully!
+        </div>
+
+        <!-- 🟢 Submit Button -->
+        <div class="text-end mt-4">
+          <button
+            type="submit"
+            class="btn btn-success px-4"
+            [disabled]="groupForm.invalid || isSubmitting"
+          >
+            {{ isSubmitting ? 'Creating...' : 'Create Group' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

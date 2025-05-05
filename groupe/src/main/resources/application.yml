@@ -1,9 +1,9 @@
 server:
   port: 8078
+
 spring:
   application:
     name: groupe
   config:
     import: optional:configserver:${CONFIG_SERVICE_URL:http://localhost:9999}
-
 

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,5 +42,12 @@ public class Groupe
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "chat_id", referencedColumnName = "chatId")
     private Chat chat;
+    @Column(length = 1000)
+    private String description;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    @Column(name = "group_image", columnDefinition = "LONGTEXT")
+    private String groupImage;
+
 
 }

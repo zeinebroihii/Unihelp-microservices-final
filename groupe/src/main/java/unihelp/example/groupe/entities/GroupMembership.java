@@ -23,7 +23,8 @@ public class GroupMembership {
     @JoinColumn(name = "group_id")
     @JsonBackReference
     private Groupe groupe;
-    @Enumerated(EnumType.STRING)
-    private Typerole role;
+    private String role;
     private LocalDateTime joinedAt;
+    @Column(name = "added_by_id")
+    private Long addedById;
 }

@@ -1,0 +1,117 @@
+<div class="container-fluid p-0">
+
+  <!-- 🔵 Hero Section -->
+  <div class="d-flex flex-column align-items-center justify-content-center text-center"
+       style="background: url('assets/study-banner.jpg') center/cover no-repeat; height: 300px;">
+    <h1 class="fw-bold display-2 mb-3" style="font-size: 4rem; color: #2C3E50;">
+      Let's Learn Together
+    </h1>
+    <p class="lead text-dark">Collaborate, Create, and Grow Your Study Group</p>
+
+    <button
+      *ngIf="canCreateGroup"
+      class="btn btn-light px-4 py-2 mt-3"
+      [routerLink]="['/add-group']">
+      ➕ Create Group
+    </button>
+  </div>
+
+  <!-- 📁 Group List -->
+  <div class="container py-5">
+    <h2 class="mb-4 text-center fw-semibold">📋 All Groups</h2>
+    <div class="mb-3 text-center">
+      <input
+        type="text"
+        class="form-control w-50 mx-auto"
+        placeholder="🔍 Rechercher un groupe (ex: Java, Révision...)"
+        [(ngModel)]="searchText"
+        (input)="filterGroups()" />
+    </div>
+
+    <div class="row g-4" *ngIf="filteredGroups.length; else noGroups">
+      <div class="col-md-6 col-lg-4" *ngFor="let group of filteredGroups">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+
+            <!-- 🖼️ Group Image with Camera (Admin only) -->
+            <div class="position-relative d-inline-block mb-3">
+              <img
+                [src]="group.groupImage || defaultGroupImage"
+                alt="Group"
+                class="rounded-circle"
+                style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                (click)="isAdmin(group) && triggerFileInput(group.groupId)"
+              />
+              <!-- 📸 Camera Icon -->
+              <div
+                *ngIf="isAdmin(group)"
+                class="position-absolute bottom-0 end-0 bg-white rounded-circle border shadow p-1"
+                style="transform: translate(50%, 50%); cursor: pointer;"
+                (click)="triggerFileInput(group.groupId)"
+              >
+                <i class="bi bi-camera" style="font-size: 14px;"></i>
+              </div>
+              <!-- 📁 Hidden File Input -->
+              <input
+                type="file"
+                accept="image/*"
+                class="d-none"
+                [id]="'fileInput-' + group.groupId"
+                (change)="onGroupImageSelected($event, group.groupId)"
+              />
+            </div>
+            <!-- 📛 Group Info -->
+            <div class="px-3 text-center">
+              <h5 class="fw-bold text-dark mb-2" style="font-size: 1.2rem;">
+                📌 {{ group.groupName }}
+              </h5>
+
+              <p class="text-muted mb-1">
+                <i class="bi bi-card-text me-1"></i>
+                <span class="fw-semibold">Description:</span> {{ group.description }}
+              </p>
+
+              <p *ngIf="!isAdmin(group)" class="text-muted mb-1">
+                <i class="bi bi-person me-1"></i>
+                <span class="fw-semibold">Created by:</span> {{ group.createdBy }}
+              </p>
+
+              <p class="text-muted mb-0">
+                <i class="bi bi-calendar3 me-1"></i>
+                <span class="fw-semibold">Created on:</span> {{ group.createdAt | date: 'longDate' }}
+              </p>
+            </div>
+
+            <!-- 🔘 Action Buttons -->
+            <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
+              <span class="badge bg-secondary">{{ group.messageCount || 0 }} messages</span>
+
+              <button *ngIf="canJoin(group)" class="btn btn-outline-dark btn-sm"
+                      (click)="requestJoin(group.groupId)">
+                🔒 Join
+              </button>
+
+              <button *ngIf="isAdmin(group) || isMember(group)" class="btn btn-outline-success btn-sm"
+                      (click)="openChat(group.groupId)">
+                💬 Chat
+              </button>
+
+              <button *ngIf="isAdmin(group)" class="btn btn-outline-danger btn-sm"
+                      (click)="deleteGroup(group.groupId)">
+                🗑️ Delete
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ❌ No Groups Message -->
+    <ng-template #noGroups>
+      <div class="alert alert-info text-center mt-5">
+        No groups found. Create your first one above!
+      </div>
+    </ng-template>
+  </div>
+</div>

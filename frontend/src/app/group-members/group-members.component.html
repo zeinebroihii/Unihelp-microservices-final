@@ -1,0 +1,60 @@
+<!-- src/app/components/group-members/group-members.component.html -->
+<div class="container mt-5">
+  <h3 class="mb-4 text-center">
+    <i class="bi bi-people-fill text-primary me-2"></i>Group Members
+  </h3>
+
+  <!-- Admins -->
+  <div *ngIf="admins.length" class="mb-4">
+    <h5 class="fw-bold">Admins</h5>
+    <ul class="list-group">
+      <li *ngFor="let member of admins" class="list-group-item d-flex align-items-center">
+        <img [src]="member.profileImage || 'assets/default-user.png'"
+             class="rounded-circle me-3" style="width:45px;height:45px;object-fit:cover"/>
+        <div class="fw-semibold">{{member.firstName}} {{member.lastName}}</div>
+        <ng-container *ngFor="let r of member.roles">
+          <span class="badge ms-1"
+                [ngClass]="{
+                  'bg-info':    r==='MENTOR',
+                  'bg-success': r==='TEACHER',
+                  'bg-secondary': r==='STUDENT'
+                }">{{r}}</span>
+        </ng-container>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Members -->
+  <div *ngIf="members.length">
+    <h5 class="fw-bold">Members</h5>
+    <ul class="list-group">
+      <li *ngFor="let member of members"
+          class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <img [src]="member.profileImage || 'assets/default-user.png'"
+               class="rounded-circle me-3" style="width:45px;height:45px;object-fit:cover"/>
+          <div class="fw-semibold me-3">{{member.firstName}} {{member.lastName}}</div>
+          <ng-container *ngFor="let r of member.roles">
+            <span class="badge ms-1"
+                  [ngClass]="{
+                    'bg-primary':   r==='ADMIN',
+                    'bg-info':      r==='MENTOR',
+                    'bg-success':   r==='TEACHER',
+                    'bg-secondary': r==='STUDENT'
+                  }">{{r}}</span>
+          </ng-container>
+        </div>
+        <!-- Affichage de “Ajouté·e par …” ou “vous” -->
+        <small *ngIf="member.invitedById != null" class="text-muted">
+          Ajouté·e par
+          {{ member.invitedById === currentUserId ? 'vous' : member.invitedBy }}
+        </small>
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="!admins.length && !members.length"
+       class="alert alert-warning text-center mt-4">
+    No members found in this group.
+  </div>
+</div>

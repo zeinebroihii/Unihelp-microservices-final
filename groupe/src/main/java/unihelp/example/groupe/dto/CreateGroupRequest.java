@@ -14,5 +14,7 @@ public class CreateGroupRequest {
     private String groupName;
       private List<Long> userIds;
     private Long createdBy;
+    private String description;
+    private String groupImage;
 
 }

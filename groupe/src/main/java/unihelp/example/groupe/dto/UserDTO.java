@@ -14,4 +14,6 @@ public class UserDTO {
     private String email;
     private String password;
     private String role;
+    private String profileImage; // <== ici c'est une String ! base64 ou URL
+
 }

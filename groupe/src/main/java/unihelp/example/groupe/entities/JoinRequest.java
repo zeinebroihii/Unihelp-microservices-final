@@ -32,4 +32,7 @@ public class JoinRequest {
     private boolean accepted = false;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime requestedAt = LocalDateTime.now();
+    @Column(columnDefinition = "LONGTEXT") // ✅ Modifier ici
+    private String profileImage;
+
 }

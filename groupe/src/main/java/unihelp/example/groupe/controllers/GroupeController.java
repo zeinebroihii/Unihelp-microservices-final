@@ -1,24 +1,33 @@
 package unihelp.example.groupe.controllers;
 
+import jakarta.transaction.Transactional;
+import org.springframework.core.io.Resource; // ✅ Correct
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import unihelp.example.groupe.dto.CreateGroupRequest;
-import unihelp.example.groupe.dto.GroupMemberDTO;
-import unihelp.example.groupe.dto.GroupeWithMembersDTO;
-import unihelp.example.groupe.dto.TypingDTO;
-import unihelp.example.groupe.entities.Chat;
-import unihelp.example.groupe.entities.Groupe;
-import unihelp.example.groupe.entities.JoinRequest;
-import unihelp.example.groupe.entities.Message;
+import org.springframework.web.multipart.MultipartFile;
+import unihelp.example.groupe.dto.*;
+import unihelp.example.groupe.entities.*;
+import unihelp.example.groupe.repositories.IMessageRepository;
+import unihelp.example.groupe.repositories.IUserInfractionRepository;
 import unihelp.example.groupe.services.IGroupeService;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -27,6 +36,8 @@ public class GroupeController {
 
     private final IGroupeService groupeService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final IUserInfractionRepository userInfractionRepository;
+    private final IMessageRepository messageRepository;
 
 
     @PostMapping("/create")
@@ -34,8 +45,11 @@ public class GroupeController {
         return ResponseEntity.ok(
                 groupeService.createGroup(
                         request.getGroupName(),
-                        request.getUserIds(),     // ➕ Longs maintenant, pas Strings
-                        request.getCreatedBy()    // ➕ createdBy est un Long
+                        request.getDescription(),  // 👈 ajouté ici
+                        request.getUserIds(),
+                        request.getCreatedBy(),
+                        request.getGroupImage() // 👈 nouveau paramètre
+
                 )
         );
     }
@@ -48,17 +62,25 @@ public class GroupeController {
     @PutMapping("/{groupId}/rename")
     public ResponseEntity<Groupe> renameGroup(
             @PathVariable Long groupId,
-            @RequestBody String newName) {
-        newName = newName.replace("\"", "");
-        return ResponseEntity.ok(groupeService.renameGroup(groupId, newName));
+            @RequestBody Map<String, String> body) {
+
+        System.out.println("🔥 Appel REST /rename reçu pour groupe " + groupId + " avec nom = " + body.get("newName"));
+
+        String newName = body.get("newName");
+        Groupe updated = groupeService.renameGroup(groupId, newName);
+        return ResponseEntity.ok(updated);
     }
 
-    @PostMapping("/{groupId}/addUserByName")
-    public ResponseEntity<Groupe> addUserByFullName(
+
+    @PostMapping("/{groupId}/add-user")
+    public ResponseEntity<Groupe> addUser(
             @PathVariable Long groupId,
-            @RequestParam String firstName,
-            @RequestParam String lastName) {
-        return ResponseEntity.ok(groupeService.addUserByFullName(groupId, firstName, lastName));
+            @RequestBody Map<String,Long> body
+    ) {
+        Long userId    = body.get("userId");
+        Long addedById = body.get("addedById");
+        Groupe g = groupeService.addUserById(groupId, userId, addedById);
+        return ResponseEntity.ok(g);
     }
 
 
@@ -91,11 +113,7 @@ public class GroupeController {
         return ResponseEntity.ok(groupeService.getAllGroups());
     }
 
-    @PostMapping("/{groupId}/video-call-start")
-    public ResponseEntity<Void> startVideoCall(@PathVariable Long groupId, @RequestParam Long userId) {
-        groupeService.startVideoCall(groupId, userId);
-        return ResponseEntity.ok().build();
-    }
+
 
     @PostMapping("/{groupId}/join-request")
     public ResponseEntity<Void> requestToJoin(@PathVariable Long groupId, @RequestParam Long userId) {
@@ -104,13 +122,17 @@ public class GroupeController {
     }
 
     @GetMapping("/{groupId}/pending-requests")
-    public ResponseEntity<List<JoinRequest>> getPendingRequests(@PathVariable Long groupId) {
+    public ResponseEntity<List<JoinRequestDTO>> getPendingRequests(@PathVariable Long groupId) {
         return ResponseEntity.ok(groupeService.getPendingRequests(groupId));
     }
 
+
     @PostMapping("/join-request/{requestId}/accept")
-    public ResponseEntity<Void> acceptJoinRequest(@PathVariable Long requestId) {
-        groupeService.acceptJoinRequest(requestId);
+    public ResponseEntity<Void> acceptJoinRequest(
+            @PathVariable Long requestId,
+            @RequestParam Long acceptedById   // ← on injecte l’ID de l’utilisateur connecté
+    ) {
+        groupeService.acceptJoinRequest(requestId, acceptedById);
         return ResponseEntity.ok().build();
     }
 
@@ -120,20 +142,26 @@ public class GroupeController {
     }
 
     @GetMapping("/created-by")
-    public ResponseEntity<List<Groupe>> getGroupsCreatedBy(@RequestParam Long userId) {
+    public ResponseEntity<List<GroupeDTO>> getGroupsCreatedBy(@RequestParam Long userId) {
         return ResponseEntity.ok(groupeService.getGroupsCreatedBy(userId));
     }
 
+
     @DeleteMapping("/group/{groupId}")
-    public ResponseEntity<?> deleteGroup(@PathVariable Long groupId,
-                                         @RequestParam Long userId) {
+    public ResponseEntity<Map<String, String>> deleteGroup(@PathVariable Long groupId,
+                                                           @RequestParam Long userId) {
         try {
             groupeService.deleteGroup(groupId, userId);
-            return ResponseEntity.ok().body("Groupe supprimé avec succès.");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Groupe supprimé avec succès.");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
         }
     }
+
     @MessageMapping("/typing/{groupId}")
     public void handleTyping(@Payload TypingDTO typingDTO, @DestinationVariable Long groupId) {
         String fullName = typingDTO.getFirstName() + " " + typingDTO.getLastName();
@@ -141,7 +169,188 @@ public class GroupeController {
         System.out.println("Typing reçu : " + typingDTO.getFirstName() + " " + typingDTO.getLastName());
 
     }
+    @PostMapping("/{groupId}/sendTextAndFile")
+    public ResponseEntity<?> sendTextAndFileMessage(
+            @PathVariable Long groupId,
+            @RequestParam Long userId,
+            @RequestParam(required = false) String messageText,
+            @RequestParam(required = false) MultipartFile file,
+            @RequestParam(required = false) Long replyToId // 👈 Ajouté ici
+    ) {
+        try {
+            String fileUrl = null;
+
+            // 📁 Gestion du fichier
+            if (file != null && !file.isEmpty()) {
+                Path uploadPath = Paths.get("uploads");
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                fileUrl = "/uploads/" + fileName;
+            }
+
+            // 📩 Appel du service avec replyToId
+            Chat chat = groupeService.sendTextAndOptionalFileMessage(groupId, userId, messageText, fileUrl, replyToId);
+
+            return ResponseEntity.ok(chat);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Erreur lors de l’envoi du message : " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{groupId}/image")
+    public ResponseEntity<?> updateGroupImage(
+            @PathVariable Long groupId,
+            @RequestBody ImageUpdateRequest request) {
+
+        groupeService.updateGroupImage(groupId, request.getImage());
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/join-request/{id}/reject")
+    public ResponseEntity<Void> rejectRequest(@PathVariable Long id) {
+        groupeService.rejectJoinRequest(id);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/search-users")
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String query) {
+        return ResponseEntity.ok(groupeService.searchUsers(query));
+    }
+
+    @GetMapping("/infractions/{userId}/{groupId}")
+    public ResponseEntity<UserInfraction> getUserInfraction(
+            @PathVariable Long userId,
+            @PathVariable Long groupId) {
+
+        return ResponseEntity.ok(
+                userInfractionRepository.findByUserIdAndGroupId(userId, groupId)
+                        .orElse(new UserInfraction(userId, groupId))
+        );
+    }
 
 
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam String filename) {
+        try {
+            Path filePath = Paths.get("uploads").resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @DeleteMapping("/messages/{id}")
+    public ResponseEntity<?> deleteMessage(
+            @PathVariable Long id,
+            @RequestParam Long userId,
+            @RequestParam String mode) {
+
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message introuvable"));
+
+        Long groupId = message.getChat().getGroupe().getGroupId(); // ✅ tu récupères le bon groupe
+
+        if ("everyone".equals(mode)) {
+            if (!message.getSenderId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Non autorisé");
+            }
+
+            messageRepository.delete(message);
+
+            // ✅ 🔔 Notifier tous les membres du groupe
+            messagingTemplate.convertAndSend(
+                    "/topic/chat/" + groupId,
+                    Map.of(
+                            "type", "MESSAGE_DELETED",
+                            "messageId", message.getId(),
+                            "mode", "everyone"
+                    )
+            );
+
+        } else if ("me".equals(mode)) {
+            if (message.getHiddenFor() == null) {
+                message.setHiddenFor(new ArrayList<>());
+            }
+            message.getHiddenFor().add(userId);
+            messageRepository.save(message);
+
+            // ✅ 🔔 Notifier uniquement ce user
+            messagingTemplate.convertAndSend(
+                    "/topic/chat/" + groupId,
+                    Map.of(
+                            "type", "MESSAGE_DELETED",
+                            "messageId", message.getId(),
+                            "mode", "me",
+                            "userId", userId
+                    )
+            );
+        }
+        return ResponseEntity.ok().build();
+    }
+    @PutMapping("/messages/{id}")
+    public ResponseEntity<Message> updateMessage(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message introuvable"));
+
+        String newContent = body.get("content");
+        if (newContent == null || newContent.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        message.setContent(newContent.trim());
+        Message updated = messageRepository.save(message);
+
+        // 🔔 Notifier le groupe via WebSocket que le message a été modifié
+        Long groupId = message.getChat().getGroupe().getGroupId();
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + groupId,
+                Map.of(
+                        "type", "MESSAGE_UPDATED",
+                        "messageId", updated.getId(),
+                        "newContent", updated.getContent()
+                )
+        );
+
+        return ResponseEntity.ok(updated);
+    }
+    @PostMapping("/{groupId}/react")
+    public ResponseEntity<Void> reactToMessage(
+            @PathVariable Long groupId,
+            @RequestParam Long messageId,
+            @RequestParam Long userId,
+            @RequestParam String emoji
+    ) {
+        groupeService.reactToMessage(groupId, messageId, userId, emoji);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{groupId}/block-user/{userId}")
+    @Transactional
+    public ResponseEntity<Void> blockUserInGroup(
+            @PathVariable Long groupId,
+            @PathVariable Long userId
+    ) {
+        groupeService.blockUserInGroup(groupId, userId);
+        return ResponseEntity.noContent().build();
+    }
 
 }
