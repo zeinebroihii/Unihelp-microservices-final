@@ -1,0 +1,78 @@
+stages:
+  - validate
+  - plan
+  - apply
+  - build
+  - deploy
+
+default:
+  image: hashicorp/terraform:latest
+  before_script:
+    - terraform init
+    - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+validate:
+  stage: validate
+  script:
+    - terraform validate
+  except:
+    - master
+
+plan:
+  stage: plan
+  script:
+    - terraform plan -out=tfplan
+  artifacts:
+    paths:
+      - tfplan
+  only:
+    - master
+
+apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve tfplan
+  dependencies:
+    - plan
+  only:
+    - master
+
+build:
+  stage: build
+  image: docker:20.10
+  services:
+    - docker:dind
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - cd microservices/user
+    - docker build -t zeinebroihii/user-microservice:latest .
+    - docker push zeinebroihii/user-microservice:latest
+    - cd ../course
+    - docker build -t zeinebroihii/course-microservice:latest .
+    - docker push zeinebroihii/course-microservice:latest
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - export KUBECONFIG=$KUBECONFIG
+    - export USER_DB_ENDPOINT=$(terraform output -raw user_db_endpoint)
+    - export COURSE_DB_ENDPOINT=$(terraform output -raw course_db_endpoint)
+  script:
+    - sed -i "s/\${USER_DB_ENDPOINT}/$USER_DB_ENDPOINT/" kubernetes/user-deployment.yml
+    - sed -i "s/\${COURSE_DB_ENDPOINT}/$COURSE_DB_ENDPOINT/" kubernetes/course-deployment.yml
+    - kubectl apply -f kubernetes/user-secret.yml
+    - kubectl apply -f kubernetes/course-secret.yml
+    - kubectl apply -f kubernetes/user-deployment.yml
+    - kubectl apply -f kubernetes/user-service.yml
+    - kubectl apply -f kubernetes/course-deployment.yml
+    - kubectl apply -f kubernetes/course-service.yml
+  dependencies:
+    - apply
+    - build
+  only:
+    - master
