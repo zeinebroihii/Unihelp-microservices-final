@@ -1,44 +1,56 @@
-   apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: course-deployment
-  spec:
-    replicas: 2
-    selector:
-      matchLabels:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: course
+  template:
+    metadata:
+      labels:
         app: course
-    template:
-      metadata:
-        labels:
-          app: course
-      spec:
-        containers:
-          - name: course-microservice
-            image: zeinebroihii/course-microservice:latest
-            ports:
-              - containerPort: 5000
-            env:
-              - name: DB_HOST
-                value: "course-db.c8k2v1k.us-west-1.rds.amazonaws.com" # Replace with terraform output
-              - name: DB_USER
-                valueFrom:
-                  secretKeyRef:
-                    name: course-db-secret
-                    key: username
-              - name: DB_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: course-db-secret
-                    key: password
-              - name: DB_NAME
-                valueFrom:
-                  secretKeyRef:
-                    name: course-db-secret
-                    key: db_name
-            resources:
-              requests:
-                cpu: "100m"
-                memory: "128Mi"
-              limits:
-                cpu: "200m"
-                memory: "256Mi"
+    spec:
+      containers:
+        - name: course-microservice
+          image: zeinebroihii/course-microservice:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: "course-db.c8k2v1k.us-west-1.rds.amazonaws.com"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: course-db-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: course-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: course-db-secret
+                  key: db_name
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5

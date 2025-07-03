@@ -1,16 +1,16 @@
 stages:
   - validate
+  - test
   - plan
   - apply
   - build
   - deploy
+  - rollback
 
 default:
   image: hashicorp/terraform:latest
   before_script:
     - terraform init
-    - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-    - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
 validate:
   stage: validate
@@ -19,10 +19,21 @@ validate:
   except:
     - master
 
+test:
+  stage: test
+  image: maven:3.8-openjdk-17
+  script:
+    - cd microservices/user
+    - mvn test
+    - cd ../course
+    - mvn test
+  only:
+    - master
+
 plan:
   stage: plan
   script:
-    - terraform plan -out=tfplan
+    - terraform plan -var-file=terraform.tfvars -out=tfplan
   artifacts:
     paths:
       - tfplan
@@ -63,16 +74,29 @@ deploy:
     - export USER_DB_ENDPOINT=$(terraform output -raw user_db_endpoint)
     - export COURSE_DB_ENDPOINT=$(terraform output -raw course_db_endpoint)
   script:
-    - sed -i "s/\${USER_DB_ENDPOINT}/$USER_DB_ENDPOINT/" kubernetes/user-deployment.yml
-    - sed -i "s/\${COURSE_DB_ENDPOINT}/$COURSE_DB_ENDPOINT/" kubernetes/course-deployment.yml
+    - sed -i "s|\${USER_DB_ENDPOINT}|$USER_DB_ENDPOINT|" kubernetes/user-deployment.yml
+    - sed -i "s|\${COURSE_DB_ENDPOINT}|$COURSE_DB_ENDPOINT|" kubernetes/course-deployment.yml
     - kubectl apply -f kubernetes/user-secret.yml
     - kubectl apply -f kubernetes/course-secret.yml
     - kubectl apply -f kubernetes/user-deployment.yml
     - kubectl apply -f kubernetes/user-service.yml
     - kubectl apply -f kubernetes/course-deployment.yml
     - kubectl apply -f kubernetes/course-service.yml
+    - kubectl apply -f kubernetes/unihelp-ingress.yml
   dependencies:
     - apply
     - build
+  only:
+    - master
+
+rollback:
+  stage: rollback
+  image: bitnami/kubectl:latest
+  when: manual
+  before_script:
+    - export KUBECONFIG=$KUBECONFIG
+  script:
+    - kubectl rollout undo deployment/user-deployment
+    - kubectl rollout undo deployment/course-deployment
   only:
     - master

@@ -1,46 +1,56 @@
-#Deploy and expose each microservice on EKS.
-#kubectl apply -f kubernetes/*.yml
-   apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: user-deployment
-  spec:
-    replicas: 2
-    selector:
-      matchLabels:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
         app: user
-    template:
-      metadata:
-        labels:
-          app: user
-      spec:
-        containers:
-          - name: user-microservice
-            image: zeinebroihii/user-microservice:latest
-            ports:
-              - containerPort: 5000
-            env:
-              - name: DB_HOST
-                value: "user-db.c8k2v1k.us-west-1.rds.amazonaws.com" # Replace with terraform output
-              - name: DB_USER
-                valueFrom:
-                  secretKeyRef:
-                    name: user-db-secret
-                    key: username
-              - name: DB_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: user-db-secret
-                    key: password
-              - name: DB_NAME
-                valueFrom:
-                  secretKeyRef:
-                    name: user-db-secret
-                    key: db_name
-            resources:
-              requests:
-                cpu: "100m"
-                memory: "128Mi"
-              limits:
-                cpu: "200m"
-                memory: "256Mi"
+    spec:
+      containers:
+        - name: user-microservice
+          image: zeinebroihii/user-microservice:latest
+          ports:
+            - containerPort: 5001
+          env:
+            - name: DB_HOST
+              value: "user-db.c8k2v1k.us-west-1.rds.amazonaws.com"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: user-db-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: user-db-secret
+                  key: db_name
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 5001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 5001
+            initialDelaySeconds: 5
+            periodSeconds: 5
